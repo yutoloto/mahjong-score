@@ -1,429 +1,423 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>中山 爆速スコア表</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f172a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="中山スコア" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-    body { background: #0f172a; color: #f1f5f9; font-family: 'Helvetica Neue', Arial, sans-serif; }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    input[type=number] { -moz-appearance: textfield; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>中山 爆速スコア表</title>
+<link rel="manifest" href="/mahjong-score/manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="中山スコア">
+<link rel="apple-touch-icon" href="/mahjong-score/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:#0f172a;color:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding:12px;padding-bottom:40px}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+::-webkit-scrollbar{height:4px;width:4px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
 
-    .cell-input {
-      width: 100%; background: transparent; border: none; outline: none;
-      text-align: center; font-size: 15px; color: #f1f5f9;
-      padding: 6px 2px; caret-color: #60a5fa; font-variant-numeric: tabular-nums;
-    }
-    .cell-input::placeholder { color: #334155; }
-    .cell-input:focus { background: rgba(96,165,250,0.12); border-radius: 6px; }
+.wrap{max-width:500px;margin:0 auto}
 
-    /* sticky header */
-    .grid-header {
-      position: sticky; top: 0; z-index: 10;
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
-    }
+.hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.hd h1{font-size:22px;font-weight:900;color:#fff;letter-spacing:.02em}
+.hd p{font-size:11px;color:#64748b}
 
-    .row-filled { background: #1e293b; }
-    .row-invalid { background: rgba(239,68,68,0.12); }
-    .row-empty { background: transparent; }
-    .row-filled:nth-child(even) { background: #172030; }
+.card{background:#1e293b;border-radius:16px;padding:16px;margin-bottom:12px}
 
-    ::-webkit-scrollbar { height: 4px; width: 4px; }
-    ::-webkit-scrollbar-track { background: #1e293b; }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
-    .toggle-btn { transition: all 0.15s; }
-    @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:0.5} }
-    .pulse-red { animation: pulse-red 1.5s ease-in-out infinite; }
+.cfg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cfg-top span{font-size:13px;font-weight:700;color:#cbd5e1}
+.toggle{display:flex;border-radius:10px;overflow:hidden;border:1px solid #475569}
+.toggle button{padding:6px 16px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#334155;color:#94a3b8;transition:all .15s}
+.toggle button.on{background:#2563eb;color:#fff}
+.rates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rate-box{background:#0f172a;border-radius:12px;padding:12px}
+.rate-box label{font-size:11px;color:#64748b;display:block;margin-bottom:4px}
+.rate-row{display:flex;align-items:center;gap:4px}
+.rate-row input{background:transparent;border:none;outline:none;color:#fff;font-size:18px;font-weight:700;width:100%;text-align:right}
+.rate-row span{color:#64748b;font-size:13px;flex-shrink:0}
 
-    .chip-input {
-      width: 100%; background: transparent; border: none; outline: none;
-      text-align: center; font-size: 20px; font-weight: 800; color: #fbbf24;
-      caret-color: #fbbf24; padding: 4px 0;
-    }
-    .chip-input::placeholder { color: #44403c; font-weight: 400; font-size: 14px; }
-    .chip-input:focus { background: rgba(251,191,36,0.1); border-radius: 6px; }
+.grid-wrap{background:#0f172a;border-radius:16px;overflow:hidden;margin-bottom:12px}
+.grid-head{background:#0f172a;border-bottom:1px solid #1e293b;padding:8px 8px 4px}
+.grid-head-row{display:flex;gap:4px;align-items:center}
+.col-num{width:32px;flex-shrink:0;text-align:center;font-size:11px;color:#475569}
+.col-p{flex:1;min-width:0}
+.col-p input{width:100%;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 4px;font-size:13px;font-weight:700;color:#93c5fd;text-align:center;outline:none}
+.col-p input:focus{border-color:#3b82f6}
+.col-diff{width:36px;flex-shrink:0;text-align:center;font-size:11px;color:#475569}
+.grid-status{display:flex;justify-content:space-between;margin-top:4px;padding:0 2px}
+.grid-status span{font-size:11px;color:#475569}
+.err-badge{font-size:11px;font-weight:700;color:#f87171;animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
 
-    /* 入力済み行の数字を少し明るく */
-    .row-filled .cell-input:not(:placeholder-shown) { color: #e2e8f0; }
-    .row-invalid .cell-input:not(:placeholder-shown) { color: #fca5a5; }
-  </style>
+.grid-body{overflow-y:auto;max-height:55vh}
+.grid-row{display:flex;gap:4px;align-items:center;padding:2px 8px;border-radius:8px;margin:1px 4px}
+.grid-row.valid{background:#1e293b}
+.grid-row.valid:nth-child(even){background:#172030}
+.grid-row.invalid{background:rgba(239,68,68,.12)}
+.row-num{width:32px;flex-shrink:0;text-align:center;font-size:11px;font-family:monospace;color:#475569}
+.row-num.dim{color:#1e3a5f}
+.row-cell{flex:1;min-width:0}
+.row-cell input{width:100%;background:transparent;border:none;outline:none;text-align:center;font-size:15px;color:#e2e8f0;padding:6px 2px;caret-color:#60a5fa}
+.row-cell input::placeholder{color:#1e3a5f}
+.row-cell input:focus{background:rgba(96,165,250,.1);border-radius:6px}
+.grid-row.invalid .row-cell input{color:#fca5a5}
+.row-diff{width:36px;flex-shrink:0;text-align:center;font-size:12px;font-weight:700;font-family:monospace}
+.row-diff.err{color:#f87171;animation:blink 1.5s ease-in-out infinite}
+.row-diff.ok{color:#4ade80;font-size:11px}
+
+.add-btn{width:100%;margin:8px 0 4px;padding:8px;border-radius:10px;background:transparent;border:1px dashed #334155;color:#64748b;font-size:12px;cursor:pointer}
+.add-btn:hover{border-color:#475569;color:#94a3b8}
+
+.chip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.chip-title{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fde68a}
+.chip-ok{font-size:12px;font-weight:700;color:#4ade80}
+.chip-err{font-size:12px;font-weight:700;color:#f87171;animation:blink 1.5s ease-in-out infinite}
+.chip-cols{display:flex;gap:8px}
+.chip-col{flex:1;min-width:0;text-align:center}
+.chip-col .name{font-size:11px;color:#94a3b8;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-col .box{background:#0f172a;border-radius:10px;border:1px solid #451a03;padding:6px 4px}
+.chip-col input{width:100%;background:transparent;border:none;outline:none;text-align:center;font-size:20px;font-weight:800;color:#fbbf24;caret-color:#fbbf24}
+.chip-col input::placeholder{color:#44403c;font-size:14px;font-weight:400}
+.chip-col input:focus{background:rgba(251,191,36,.08);border-radius:6px}
+.chip-col .unit{font-size:11px;color:#64748b;margin-top:2px}
+
+.result-title{font-size:13px;font-weight:700;color:#cbd5e1;margin-bottom:12px}
+.result-items{display:flex;flex-direction:column;gap:10px}
+.result-item{background:#0f172a;border-radius:12px;padding:12px}
+.result-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+.result-name{font-weight:700;color:#fff;font-size:15px}
+.result-yen{font-size:24px;font-weight:900;font-family:monospace}
+.result-yen.pos{color:#60a5fa}
+.result-yen.neg{color:#f87171}
+.result-sub{display:flex;gap:12px;font-size:11px;color:#64748b;margin-bottom:6px}
+.result-sub b{color:#cbd5e1}
+.result-sub .chip-amt{color:#fbbf24}
+.result-sub .calc{margin-left:auto;color:#475569}
+.result-bar{position:relative;height:6px;background:#1e293b;border-radius:99px;overflow:hidden}
+.result-bar-fill{position:absolute;top:0;height:100%;border-radius:99px;transition:width .4s}
+.result-bar-fill.pos{background:#3b82f6;right:50%}
+.result-bar-fill.neg{background:#ef4444;left:50%}
+.result-bar-mid{position:absolute;left:50%;top:0;width:1px;height:100%;background:#334155}
+.rate-note{text-align:center;font-size:11px;color:#475569;margin-top:12px;padding-top:12px;border-top:1px solid #1e293b}
+</style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useCallback, useRef, useEffect, useMemo } = React;
+<div class="wrap">
 
-const DEFAULT_PLAYERS_3 = ['Aさん', 'Bさん', 'Cさん'];
-const DEFAULT_PLAYERS_4 = ['Aさん', 'Bさん', 'Cさん', 'Dさん'];
-const INITIAL_ROWS = 40;
-const AUTO_ADD_THRESHOLD = 5; // 残り5行以下になったら自動追加
+  <div class="hd">
+    <svg width="44" height="56" viewBox="0 0 48 62">
+      <rect x="1" y="1" width="46" height="60" rx="6" fill="#f5f0e8" stroke="#b0956e" stroke-width="1.5"/>
+      <rect x="3.5" y="3.5" width="41" height="55" rx="4" fill="none" stroke="#b0956e" stroke-width=".7"/>
+      <text x="24" y="44" text-anchor="middle" font-family="serif" font-size="34" font-weight="900" fill="#cc0000">中山</text>
+    </svg>
+    <div>
+      <h1>爆速スコア表</h1>
+      <p>麻雀精算リアルタイム計算</p>
+    </div>
+  </div>
 
-function makeEmptyRow(n) {
-  return Array.from({ length: n }, () => ({ pt: '' }));
-}
-
-function parseNum(v) {
-  if (v === '' || v === '-' || v === '+') return null;
-  const n = Number(v);
-  return isNaN(n) ? null : n;
-}
-
-function rowStatus(cells) {
-  const pts = cells.map(c => parseNum(c.pt));
-  const allEmpty = pts.every(v => v === null);
-  if (allEmpty) return { status: 'empty', diff: 0 };
-  const ptSum = pts.reduce((a, b) => a + (b ?? 0), 0);
-  return { status: ptSum === 0 ? 'valid' : 'invalid', diff: ptSum };
-}
-
-function rowStatusStr(cells) { return rowStatus(cells).status; }
-
-function chipStatus(chips, numPlayers) {
-  const vals = chips.slice(0, numPlayers).map(v => parseNum(v));
-  const allEmpty = vals.every(v => v === null);
-  if (allEmpty) return 'empty';
-  const sum = vals.reduce((a, b) => a + (b ?? 0), 0);
-  return sum === 0 ? 'valid' : 'invalid';
-}
-
-function SettingsPanel({ numPlayers, setNumPlayers, pointRate, setPointRate, chipRate, setChipRate }) {
-  return (
-    <div className="bg-slate-800 rounded-2xl p-4 mb-3 shadow-lg">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-bold text-slate-300">設定</span>
-        <div className="flex rounded-xl overflow-hidden border border-slate-600">
-          {[3,4].map(n => (
-            <button key={n} onClick={() => setNumPlayers(n)}
-              className={`toggle-btn px-4 py-1.5 text-sm font-bold ${numPlayers === n ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'}`}
-            >{n}人</button>
-          ))}
+  <div class="card" id="settings">
+    <div class="cfg-top">
+      <span>設定</span>
+      <div class="toggle">
+        <button id="btn3" class="on" onclick="setPlayers(3)">3人</button>
+        <button id="btn4" onclick="setPlayers(4)">4人</button>
+      </div>
+    </div>
+    <div class="rates">
+      <div class="rate-box">
+        <label>点数レート（1pt）</label>
+        <div class="rate-row">
+          <input type="number" inputmode="numeric" id="ptRate" value="10" oninput="update()">
+          <span>円</span>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-slate-700 rounded-xl p-3">
-          <div className="text-xs text-slate-400 mb-1">点数レート（1pt）</div>
-          <div className="flex items-center gap-1">
-            <input type="number" inputMode="numeric" value={pointRate}
-              onChange={e => setPointRate(e.target.value)}
-              className="bg-transparent text-white font-bold text-lg w-full outline-none text-right"
-              placeholder="10" />
-            <span className="text-slate-400 text-sm shrink-0">円</span>
-          </div>
-        </div>
-        <div className="bg-slate-700 rounded-xl p-3">
-          <div className="text-xs text-slate-400 mb-1">チップレート（1枚）</div>
-          <div className="flex items-center gap-1">
-            <input type="number" inputMode="numeric" value={chipRate}
-              onChange={e => setChipRate(e.target.value)}
-              className="bg-transparent text-white font-bold text-lg w-full outline-none text-right"
-              placeholder="50" />
-            <span className="text-slate-400 text-sm shrink-0">円</span>
-          </div>
+      <div class="rate-box">
+        <label>チップレート（1枚）</label>
+        <div class="rate-row">
+          <input type="number" inputmode="numeric" id="chipRate" value="50" oninput="update()">
+          <span>円</span>
         </div>
       </div>
     </div>
-  );
+  </div>
+
+  <div class="grid-wrap">
+    <div class="grid-head">
+      <div class="grid-head-row" id="headRow"></div>
+      <div class="grid-status">
+        <span id="filledCount">0局入力済み</span>
+        <span id="errBadge" class="err-badge" style="display:none"></span>
+      </div>
+    </div>
+    <div class="grid-body" id="gridBody"></div>
+  </div>
+
+  <div class="card" id="chipPanel">
+    <div class="chip-head">
+      <div class="chip-title">🪙 チップ（セッション合計）</div>
+      <span id="chipStatus"></span>
+    </div>
+    <div class="chip-cols" id="chipCols"></div>
+  </div>
+
+  <div class="card">
+    <div class="result-title">精算結果</div>
+    <div class="result-items" id="results"></div>
+    <div class="rate-note" id="rateNote"></div>
+  </div>
+
+</div>
+
+<script>
+const INIT_ROWS = 40;
+const AUTO_ADD = 5;
+
+let numP = 3;
+let players = ['Aさん','Bさん','Cさん','Dさん'];
+let rows = Array.from({length:INIT_ROWS}, () => Array(4).fill(''));
+let chips = ['','','',''];
+
+function num(v){ if(v===''||v==='-'||v==='+') return null; const n=+v; return isNaN(n)?null:n; }
+
+function rowDiff(ri){
+  let s=0, hasVal=false;
+  for(let j=0;j<numP;j++){ const v=num(rows[ri][j]); if(v!==null){s+=v;hasVal=true;} }
+  return {diff:s, empty:!hasVal};
 }
 
-function ScoreGrid({ players, setPlayers, rows, setRows, numPlayers }) {
-  const inputRefs = useRef([]);
+function chipSum(){
+  let s=0;
+  for(let j=0;j<numP;j++) s+=(num(chips[j])??0);
+  return s;
+}
 
-  const handleChange = useCallback((ri, pi, val) => {
-    setRows(prev => {
-      const next = prev.map(r => r.map(c => ({...c})));
-      next[ri][pi].pt = val;
-      return next;
-    });
-  }, [setRows]);
+function setPlayers(n){
+  numP=n;
+  document.getElementById('btn3').className=n===3?'on':'';
+  document.getElementById('btn4').className=n===4?'on':'';
+  buildHead();
+  buildGrid();
+  buildChips();
+  update();
+}
 
-  const handleFocus = useCallback((ri) => {
-    // 最後のほうに到達したら自動追加
-    setRows(prev => {
-      const emptyFromEnd = [...prev].reverse().findIndex(r => rowStatus(r).status !== 'empty');
-      const trailingEmpty = emptyFromEnd === -1 ? prev.length : emptyFromEnd;
-      if (trailingEmpty <= AUTO_ADD_THRESHOLD) {
-        return [...prev, ...Array.from({ length: 10 }, () => makeEmptyRow(numPlayers))];
-      }
-      return prev;
-    });
-  }, [setRows, numPlayers]);
+function buildHead(){
+  const el=document.getElementById('headRow');
+  el.innerHTML='';
+  el.innerHTML+='<div class="col-num">#</div>';
+  for(let j=0;j<numP;j++){
+    const d=document.createElement('div');
+    d.className='col-p';
+    const inp=document.createElement('input');
+    inp.value=players[j];
+    inp.maxLength=6;
+    inp.dataset.pi=j;
+    inp.oninput=e=>{players[j]=e.target.value; refreshChipNames(); update();};
+    d.appendChild(inp);
+    el.appendChild(d);
+  }
+  el.innerHTML+='<div class="col-diff">ズレ</div>';
+}
 
-  const handleEnterNext = useCallback((ri, pi) => {
-    const cur = ri * numPlayers + pi;
-    const next = cur + 1;
-    // 次のセルへ（行末なら次の行の先頭）
-    if (inputRefs.current[next]) {
-      inputRefs.current[next].focus();
+function buildGrid(){
+  const body=document.getElementById('gridBody');
+  body.innerHTML='';
+  for(let i=0;i<rows.length;i++) body.appendChild(makeRow(i));
+  const btn=document.createElement('button');
+  btn.className='add-btn';
+  btn.textContent='＋ 10行追加';
+  btn.onclick=()=>{
+    for(let k=0;k<10;k++) rows.push(Array(4).fill(''));
+    const b=document.getElementById('gridBody');
+    const addBtn=b.lastElementChild;
+    for(let k=rows.length-10;k<rows.length;k++){
+      b.insertBefore(makeRow(k),addBtn);
     }
-  }, [numPlayers]);
-
-  const filledCount = useMemo(() => rows.filter(r => rowStatus(r).status !== 'empty').length, [rows]);
-  const invalidCount = useMemo(() => rows.filter(r => rowStatus(r).status === 'invalid').length, [rows]);
-
-  return (
-    <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg">
-      {/* ヘッダー（固定） */}
-      <div className="px-2 pt-2 pb-1 bg-slate-900 border-b border-slate-700">
-        <div className="flex gap-1 items-center">
-          <div className="w-9 shrink-0 text-center">
-            <span className="text-xs text-slate-500">#</span>
-          </div>
-          {players.map((name, i) => (
-            <div key={i} className="flex-1 min-w-0">
-              <input
-                value={name}
-                onChange={e => {
-                  const next = [...players];
-                  next[i] = e.target.value;
-                  setPlayers(next);
-                }}
-                className="w-full bg-slate-700 text-center text-sm font-bold text-blue-300 rounded-lg py-1 px-1 outline-none border border-slate-600 focus:border-blue-500"
-                maxLength={6}
-              />
-            </div>
-          ))}
-          {/* ズレ列ヘッダー */}
-          <div className="w-10 shrink-0 text-center">
-            <span className="text-xs text-slate-500">ズレ</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-between mt-1 px-1">
-          <span className="text-xs text-slate-500">{filledCount}局入力済み</span>
-          {invalidCount > 0 && (
-            <span className="text-xs text-red-400 pulse-red font-bold">⚠ {invalidCount}行 合計≠0</span>
-          )}
-        </div>
-      </div>
-
-      {/* 独立スクロール領域 */}
-      <div className="overflow-y-auto px-2 pb-2" style={{ maxHeight: '55vh' }}>
-        {rows.map((cells, ri) => {
-          const { status, diff } = rowStatus(cells);
-          const rowCls = status === 'invalid' ? 'row-invalid' : status === 'empty' ? 'row-empty' : 'row-filled';
-          return (
-            <div key={ri} className={`flex gap-1 rounded-lg transition-colors ${rowCls}`}
-              style={{ marginBottom: '2px' }}>
-              <div className="w-9 shrink-0 flex items-center justify-center">
-                <span className={`text-xs font-mono ${status === 'empty' ? 'text-slate-700' : 'text-slate-400'}`}>
-                  {ri + 1}
-                </span>
-              </div>
-              {cells.map((cell, pi) => (
-                <div key={pi} className="flex-1 min-w-0">
-                  <input
-                    ref={el => { inputRefs.current[ri * numPlayers + pi] = el; }}
-                    type="number" inputMode="numeric"
-                    value={cell.pt}
-                    placeholder="—"
-                    onChange={e => handleChange(ri, pi, e.target.value)}
-                    onFocus={() => handleFocus(ri)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === 'Tab') {
-                        e.preventDefault();
-                        handleEnterNext(ri, pi);
-                      }
-                    }}
-                    className="cell-input"
-                  />
-                </div>
-              ))}
-              {/* ズレ表示 */}
-              <div className="w-10 shrink-0 flex items-center justify-center">
-                {status === 'invalid' && (
-                  <span className="text-xs font-bold tabular-nums text-red-400 pulse-red">
-                    {diff > 0 ? '+' : ''}{diff}
-                  </span>
-                )}
-                {status === 'valid' && (
-                  <span className="text-xs text-green-500">✓</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* 手動追加ボタン */}
-        <button
-          onClick={() => setRows(prev => [...prev, ...Array.from({ length: 10 }, () => makeEmptyRow(numPlayers))])}
-          className="w-full mt-2 py-2 rounded-xl text-xs text-slate-500 border border-dashed border-slate-700 hover:border-slate-500 hover:text-slate-400 transition-colors"
-        >
-          ＋ 10行追加
-        </button>
-      </div>
-    </div>
-  );
+    update();
+  };
+  body.appendChild(btn);
 }
 
-function ChipPanel({ players, chips, setChips, numPlayers }) {
-  const status = chipStatus(chips, numPlayers);
-  const sum = chips.slice(0, numPlayers).reduce((a, v) => a + (parseNum(v) ?? 0), 0);
-  const borderCls = status === 'invalid' ? 'border-red-500/60' : status === 'valid' ? 'border-green-500/40' : 'border-yellow-500/20';
+function makeRow(i){
+  const row=document.createElement('div');
+  row.className='grid-row empty';
+  row.id='row'+i;
 
-  return (
-    <div className={`rounded-2xl p-4 mt-3 shadow-lg border bg-slate-800 ${borderCls}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🪙</span>
-          <span className="text-sm font-bold text-yellow-300">チップ（セッション合計）</span>
-        </div>
-        {status === 'invalid' && (
-          <div className="text-xs text-red-400 pulse-red font-bold">合計 {sum > 0 ? '+' : ''}{sum} ≠ 0</div>
-        )}
-        {status === 'valid' && (
-          <div className="text-xs text-green-400 font-bold">✓ 合計 0</div>
-        )}
-      </div>
-      <div className="flex gap-2">
-        {players.map((name, i) => (
-          <div key={i} className="flex-1 min-w-0 text-center">
-            <div className="text-xs text-slate-400 mb-1 truncate">{name || `P${i+1}`}</div>
-            <div className="bg-slate-700 rounded-xl border border-yellow-900/40 py-1.5 px-1">
-              <input
-                type="number" inputMode="numeric"
-                value={chips[i] ?? ''}
-                placeholder="0"
-                onChange={e => {
-                  const next = [...chips];
-                  next[i] = e.target.value;
-                  setChips(next);
-                }}
-                className="chip-input"
-              />
-            </div>
-            <div className="text-xs text-slate-500 mt-1">枚</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const numEl=document.createElement('div');
+  numEl.className='row-num dim';
+  numEl.id='rn'+i;
+  numEl.textContent=i+1;
+  row.appendChild(numEl);
+
+  for(let j=0;j<numP;j++){
+    const cell=document.createElement('div');
+    cell.className='row-cell';
+    const inp=document.createElement('input');
+    inp.type='number';
+    inp.inputMode='numeric';
+    inp.placeholder='—';
+    inp.value=rows[i][j];
+    inp.dataset.ri=i;
+    inp.dataset.pi=j;
+    inp.oninput=e=>{
+      rows[i][j]=e.target.value;
+      autoExpand(i);
+      updateRow(i);
+      update();
+    };
+    inp.onkeydown=e=>{
+      if(e.key==='Enter'||e.key==='Tab'){
+        e.preventDefault();
+        focusNext(i,j);
+      }
+    };
+    cell.appendChild(inp);
+    row.appendChild(cell);
+  }
+
+  const diff=document.createElement('div');
+  diff.className='row-diff';
+  diff.id='rd'+i;
+  row.appendChild(diff);
+
+  return row;
 }
 
-function ResultBar({ players, rows, chips, numPlayers, pointRate, chipRate }) {
-  const pr = parseNum(pointRate) ?? 10;
-  const cr = parseNum(chipRate) ?? 50;
+function focusNext(ri,pi){
+  const next=ri*numP+pi+1;
+  const allInputs=document.querySelectorAll('#gridBody .row-cell input');
+  if(allInputs[next]) allInputs[next].focus();
+}
 
-  const totals = players.map((_, i) => {
-    const pt = rows.reduce((s, row) => s + (parseNum(row[i].pt) ?? 0), 0);
-    const chip = parseNum(chips[i]) ?? 0;
-    const yen = pt * pr + chip * cr;
-    return { pt, chip, yen };
+function autoExpand(ri){
+  let trailing=0;
+  for(let i=rows.length-1;i>=0;i--){
+    if(rows[i].every(v=>v==='')) trailing++; else break;
+  }
+  if(trailing<=AUTO_ADD){
+    const body=document.getElementById('gridBody');
+    const addBtn=body.lastElementChild;
+    for(let k=0;k<10;k++){
+      rows.push(Array(4).fill(''));
+      body.insertBefore(makeRow(rows.length-1),addBtn);
+    }
+  }
+}
+
+function updateRow(i){
+  const {diff,empty}=rowDiff(i);
+  const rowEl=document.getElementById('row'+i);
+  const numEl=document.getElementById('rn'+i);
+  const diffEl=document.getElementById('rd'+i);
+  if(!rowEl) return;
+  if(empty){
+    rowEl.className='grid-row empty';
+    numEl.className='row-num dim';
+    diffEl.textContent='';
+    diffEl.className='row-diff';
+  } else if(diff===0){
+    rowEl.className='grid-row valid';
+    numEl.className='row-num';
+    diffEl.textContent='✓';
+    diffEl.className='row-diff ok';
+  } else {
+    rowEl.className='grid-row invalid';
+    numEl.className='row-num';
+    diffEl.textContent=(diff>0?'+':'')+diff;
+    diffEl.className='row-diff err';
+  }
+}
+
+function buildChips(){
+  const el=document.getElementById('chipCols');
+  el.innerHTML='';
+  for(let j=0;j<numP;j++){
+    const col=document.createElement('div');
+    col.className='chip-col';
+    col.innerHTML=`<div class="name" id="cn${j}">${players[j]}</div>
+      <div class="box"><input type="number" inputmode="numeric" placeholder="0" value="${chips[j]}" data-pi="${j}" oninput="chips[${j}]=this.value;update()"></div>
+      <div class="unit">枚</div>`;
+    el.appendChild(col);
+  }
+}
+
+function refreshChipNames(){
+  for(let j=0;j<numP;j++){
+    const el=document.getElementById('cn'+j);
+    if(el) el.textContent=players[j]||`P${j+1}`;
+  }
+}
+
+function update(){
+  let filled=0, invalid=0;
+  for(let i=0;i<rows.length;i++){
+    const {diff,empty}=rowDiff(i);
+    if(!empty){ filled++; if(diff!==0) invalid++; }
+  }
+  document.getElementById('filledCount').textContent=filled+'局入力済み';
+  const badge=document.getElementById('errBadge');
+  if(invalid>0){badge.textContent=`⚠ ${invalid}行 合計≠0`;badge.style.display='';}
+  else badge.style.display='none';
+
+  const cs=chipSum();
+  const chipHasVal=chips.slice(0,numP).some(v=>v!=='');
+  const cst=document.getElementById('chipStatus');
+  if(!chipHasVal) cst.textContent='';
+  else if(cs===0){cst.className='chip-ok';cst.textContent='✓ 合計 0';}
+  else{cst.className='chip-err';cst.textContent=`合計 ${cs>0?'+':''}${cs} ≠ 0`;}
+
+  const pr=num(document.getElementById('ptRate').value)??10;
+  const cr=num(document.getElementById('chipRate').value)??50;
+  const totals=[];
+  for(let j=0;j<numP;j++){
+    let pt=0;
+    for(let i=0;i<rows.length;i++) pt+=(num(rows[i][j])??0);
+    const chip=num(chips[j])??0;
+    const yen=pt*pr+chip*cr;
+    totals.push({pt,chip,yen,name:players[j]||`P${j+1}`});
+  }
+  const maxAbs=Math.max(1,...totals.map(t=>Math.abs(t.yen)));
+  const el=document.getElementById('results');
+  el.innerHTML='';
+  totals.forEach(({pt,chip,yen,name})=>{
+    const isPos=yen>=0;
+    const bw=Math.round(Math.abs(yen)/maxAbs*100);
+    const div=document.createElement('div');
+    div.className='result-item';
+    div.innerHTML=`
+      <div class="result-top">
+        <span class="result-name">${name}</span>
+        <span class="result-yen ${isPos?'pos':'neg'}">${isPos?'+':''}${yen.toLocaleString()}円</span>
+      </div>
+      <div class="result-sub">
+        <span>pt: <b>${pt>0?'+':''}${pt}</b></span>
+        <span>chip: <b class="chip-amt">${chip>0?'+':''}${chip}枚</b></span>
+        <span class="calc">${(pt*pr>0?'+':'')}${(pt*pr).toLocaleString()} + ${(chip*cr>0?'+':'')}${(chip*cr).toLocaleString()}</span>
+      </div>
+      <div class="result-bar">
+        <div class="result-bar-fill ${isPos?'pos':'neg'}" style="width:${bw/2}%"></div>
+        <div class="result-bar-mid"></div>
+      </div>`;
+    el.appendChild(div);
   });
-
-  const maxAbs = Math.max(1, ...totals.map(t => Math.abs(t.yen)));
-
-  return (
-    <div className="bg-slate-800 rounded-2xl p-4 mt-3 shadow-lg">
-      <div className="text-sm font-bold text-slate-300 mb-3">精算結果</div>
-      <div className="space-y-3">
-        {players.map((name, i) => {
-          const { pt, chip, yen } = totals[i];
-          const isPos = yen >= 0;
-          const barW = Math.round(Math.abs(yen) / maxAbs * 100);
-          return (
-            <div key={i} className="bg-slate-700 rounded-xl p-3">
-              <div className="flex items-baseline justify-between mb-1">
-                <span className="font-bold text-white">{name || `P${i+1}`}</span>
-                <span className={`text-2xl font-black tabular-nums ${isPos ? 'text-blue-400' : 'text-red-400'}`}>
-                  {isPos ? '+' : ''}{yen.toLocaleString()}円
-                </span>
-              </div>
-              <div className="flex gap-3 text-xs text-slate-400 mb-2">
-                <span>pt: <b className="text-slate-200">{pt > 0 ? '+' : ''}{pt}</b></span>
-                <span>chip: <b className="text-yellow-400">{chip > 0 ? '+' : ''}{chip}枚</b></span>
-                <span className="text-slate-500 ml-auto">
-                  {(pt * pr > 0 ? '+' : '')}{(pt * pr).toLocaleString()} + {(chip * cr > 0 ? '+' : '')}{(chip * cr).toLocaleString()}
-                </span>
-              </div>
-              <div className="relative h-1.5 bg-slate-600 rounded-full overflow-hidden">
-                <div
-                  className={`absolute h-full rounded-full transition-all duration-500 ${isPos ? 'bg-blue-500 right-1/2' : 'bg-red-500 left-1/2'}`}
-                  style={{ width: `${barW / 2}%` }}
-                />
-                <div className="absolute left-1/2 top-0 h-full w-px bg-slate-400 opacity-40" />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-3 pt-3 border-t border-slate-600 text-xs text-slate-500 text-center">
-        {pr}円/pt・{cr}円/chip
-      </div>
-    </div>
-  );
+  document.getElementById('rateNote').textContent=`${pr}円/pt・${cr}円/chip`;
 }
 
-function App() {
-  const [numPlayers, setNumPlayers] = useState(3);
-  const [players, setPlayers] = useState(DEFAULT_PLAYERS_3);
-  const [pointRate, setPointRate] = useState('10');
-  const [chipRate, setChipRate] = useState('50');
-  const [rows, setRows] = useState(() => Array.from({ length: INITIAL_ROWS }, () => makeEmptyRow(3)));
-  const [chips, setChips] = useState(['', '', '', '']);
+buildHead();
+buildGrid();
+buildChips();
+for(let i=0;i<rows.length;i++) updateRow(i);
+update();
 
-  useEffect(() => {
-    const nextPlayers = numPlayers === 3 ? DEFAULT_PLAYERS_3.slice() : DEFAULT_PLAYERS_4.slice();
-    setPlayers(nextPlayers);
-    setRows(prev => prev.map(row => {
-      const next = makeEmptyRow(numPlayers);
-      for (let i = 0; i < Math.min(row.length, numPlayers); i++) next[i] = { pt: row[i].pt };
-      return next;
-    }));
-  }, [numPlayers]);
-
-  return (
-    <div className="min-h-screen p-3 pb-10 max-w-lg mx-auto">
-      <div className="mb-3 flex items-center gap-3">
-        <svg width="48" height="62" viewBox="0 0 48 62" xmlns="http://www.w3.org/2000/svg">
-          <rect x="1" y="1" width="46" height="60" rx="6" ry="6" fill="#f5f0e8" stroke="#b0956e" strokeWidth="1.5"/>
-          <rect x="3.5" y="3.5" width="41" height="55" rx="4" ry="4" fill="none" stroke="#b0956e" strokeWidth="0.7"/>
-          <text x="24" y="44" textAnchor="middle" dominantBaseline="auto" fontFamily="'Hiragino Mincho ProN','Yu Mincho','serif'" fontSize="34" fontWeight="900" fill="#cc0000">中山</text>
-        </svg>
-        <div>
-          <h1 className="text-2xl font-black text-white tracking-wide">爆速スコア表</h1>
-          <p className="text-xs text-slate-500">麻雀精算リアルタイム計算</p>
-        </div>
-      </div>
-
-      <SettingsPanel
-        numPlayers={numPlayers} setNumPlayers={setNumPlayers}
-        pointRate={pointRate} setPointRate={setPointRate}
-        chipRate={chipRate} setChipRate={setChipRate}
-      />
-
-      <ScoreGrid
-        players={players} setPlayers={setPlayers}
-        rows={rows} setRows={setRows}
-        numPlayers={numPlayers}
-      />
-
-      <ChipPanel
-        players={players} chips={chips}
-        setChips={setChips} numPlayers={numPlayers}
-      />
-
-      <ResultBar
-        players={players} rows={rows}
-        chips={chips} numPlayers={numPlayers}
-        pointRate={pointRate} chipRate={chipRate}
-      />
-    </div>
-  );
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/mahjong-score/sw.js');
 }
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));}</script>
 </body>
 </html>

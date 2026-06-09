@@ -1,14 +1,10 @@
-﻿const CACHE = "nakayama-v2";
+const CACHE = "nakayama-v3";
 const URLS = [
   "/mahjong-score/",
   "/mahjong-score/index.html",
   "/mahjong-score/manifest.json",
   "/mahjong-score/icon-192.png",
-  "/mahjong-score/icon-512.png",
-  "https://unpkg.com/react@18/umd/react.production.min.js",
-  "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js",
-  "https://unpkg.com/@babel/standalone/babel.min.js",
-  "https://cdn.tailwindcss.com"
+  "/mahjong-score/icon-512.png"
 ];
 
 self.addEventListener("install", e => {
