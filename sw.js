@@ -1,4 +1,4 @@
-const V = 'v5';
+const V = 'v6';
 const FILES = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {

@@ -435,7 +435,7 @@ function compute(s3, {uma, pr}) {
   const tobiB = [0,0,0];
   const tj = s3.findIndex(s=>s<=0);
   if(tj!==-1){ const top=sorted[0].i; tobiB[tj]-=TOBI[uma]; tobiB[top]+=TOBI[uma]; }
-  const totalPts = raw.map((r,i)=>r+umaB[i]+okaB[i]+tobiB[i]);
+  const totalPts = raw.map((r,i)=>Math.round(r+umaB[i]+okaB[i]+tobiB[i]));
   const ptsYen = totalPts.map(p=>Math.round(p*1000*pr));
   return {raw,umaB,okaB,tobiB,totalPts,ptsYen,rank};
 }
