@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>三麻スコア</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <style>
+    :root {
+      --bg: #0f172a; --sur: #1e293b; --sur2: #334155;
+      --acc: #6366f1; --txt: #f1f5f9; --txt2: #94a3b8;
+      --red: #f87171; --grn: #4ade80; --bdr: #334155; --r: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); color: var(--txt); font-family: -apple-system,'Hiragino Sans','Yu Gothic',sans-serif; font-size: 16px; overscroll-behavior: none; }
+    .screen { display: none; flex-direction: column; height: 100dvh; overflow: hidden; }
+    .screen.active { display: flex; }
+    .hdr { background: var(--sur); padding: 14px 16px; padding-top: max(14px,env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--bdr); flex-shrink: 0; }
+    .hdr h1 { font-size: 17px; font-weight: 700; }
+    .hb { background: none; border: none; color: var(--acc); font-size: 15px; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .hb:active { background: var(--sur2); }
+    .cnt { flex: 1; overflow-y: auto; padding: 14px; -webkit-overflow-scrolling: touch; padding-bottom: 40px; }
+    .card { background: var(--sur); border-radius: var(--r); padding: 14px; margin-bottom: 12px; }
+    .ct { font-size: 11px; font-weight: 700; color: var(--txt2); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 12px; }
+    .seg { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; gap: 3px; }
+    .sb { flex: 1; padding: 9px; border: none; border-radius: 6px; background: none; color: var(--txt2); font-size: 15px; font-weight: 600; cursor: pointer; }
+    .sb.on { background: var(--acc); color: #fff; }
+    label { display: block; font-size: 13px; color: var(--txt2); margin-bottom: 5px; }
+    input[type="text"], input[type="number"] { width: 100%; background: var(--bg); border: 1.5px solid var(--bdr); border-radius: 8px; color: var(--txt); font-size: 16px; padding: 10px 12px; outline: none; -webkit-appearance: none; }
+    input:focus { border-color: var(--acc); }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: var(--r); font-size: 16px; font-weight: 700; cursor: pointer; }
+    .btn:active { opacity: .75; }
+    .btn-p { background: var(--acc); color: #fff; }
+    .btn-s { background: var(--sur2); color: var(--txt); }
+    .btn-d { background: #ef4444; color: #fff; }
+    .mt1 { margin-top: 8px; } .mt2 { margin-top: 12px; }
+    .sm { font-size: 13px; color: var(--txt2); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 7px 16px; border: 1.5px solid var(--bdr); border-radius: 20px; background: none; color: var(--txt2); font-size: 14px; cursor: pointer; font-weight: 500; }
+    .chip.on { border-color: var(--acc); color: var(--acc); background: rgba(99,102,241,.12); }
+    .pos { color: var(--grn); font-weight: 700; }
+    .neg { color: var(--red); font-weight: 700; }
+    .rnk { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--sur2); font-size: 12px; font-weight: 700; align-items: center; justify-content: center; }
+    .r1 { background: #f59e0b; color: #000; } .r2 { background: #9ca3af; color: #000; } .r3 { background: #92400e; color: #fff; }
+    .srow2 { display: flex; justify-content: space-between; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--bdr); }
+    .srow2:last-child { border-bottom: none; }
+    .sname { font-size: 15px; font-weight: 700; }
+    .samt { font-size: 20px; font-weight: 800; }
+    .tabs { display: flex; background: var(--sur); border-bottom: 1px solid var(--bdr); flex-shrink: 0; }
+    .tab { flex: 1; padding: 11px; border: none; background: none; color: var(--txt2); font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab.on { color: var(--txt); border-bottom-color: var(--acc); }
+    .tobi-tag { display: inline-block; padding: 1px 5px; border-radius: 4px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; vertical-align: middle; }
+    .gcard { background: var(--sur); border-radius: var(--r); padding: 14px; margin-bottom: 10px; cursor: pointer; }
+    .gcard:active { opacity: .75; }
+    .empty { text-align: center; padding: 60px 20px; color: var(--txt2); }
+    .big { font-size: 52px; margin-bottom: 14px; }
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* ===== EXCEL TABLE ===== */
+    .xwrap { overflow-x: auto; border: 1.5px solid #4a5568; border-radius: 6px; }
+    .xtbl { border-collapse: collapse; font-size: 13px; width: 100%; }
+    .xtbl th, .xtbl td { border: 1px solid #4a5568; padding: 0; }
+    /* column header */
+    .xtbl thead th { background: #2d3748; color: #a0aec0; font-size: 12px; font-weight: 700; padding: 8px 10px; white-space: nowrap; position: sticky; top: 0; z-index: 2; text-align: center; }
+    .xtbl thead th:first-child { background: #1a202c; width: 52px; }
+    /* row header (view) */
+    .xtbl td.rh { background: #2d3748; color: #a0aec0; font-size: 11px; font-weight: 700; padding: 0 6px; white-space: nowrap; width: 52px; text-align: center; vertical-align: middle; line-height: 1.4; }
+    /* data cell (view) */
+    .xtbl td.dc { background: #1a2035; padding: 6px 10px; min-width: 90px; text-align: center; cursor: pointer; }
+    .xtbl tr:nth-child(even) td.dc { background: #1c2540; }
+    .xtbl td.dc:hover { background: #243050; }
+    .xv-big { font-size: 14px; font-weight: 700; line-height: 1.3; }
+    .xv-sm  { font-size: 10px; opacity: .6; line-height: 1.2; }
+    .xtbl td.dc.abs-cell { color: #4a5568; font-size: 12px; }
+    /* total row */
+    .xtbl tr.tr-tot td.rh { background: #1e3a5f; color: #90cdf4; font-weight: 800; }
+    .xtbl tr.tr-tot td.dc { background: #1e3a5f; cursor: default; }
+    /* edit row */
+    .xtbl tr.tr-edit td.rh { background: #1e293b; vertical-align: top; padding: 6px 4px; }
+    .xtbl tr.tr-edit td.dc-e { background: #0f172a; padding: 4px 4px; min-width: 90px; vertical-align: top; }
+    .xtbl tr.tr-edit td.dc-e.abs-e { background: #1a202c; text-align: center; vertical-align: middle; }
+    /* score input in cell */
+    .ci-score { width: 100%; background: #1e293b; border: 1.5px solid #4a5568; border-radius: 6px; color: var(--txt); font-size: 15px; font-weight: 700; padding: 6px 6px; text-align: center; outline: none; -webkit-appearance: none; }
+    .ci-score:focus { border-color: var(--acc); }
+    /* chip stepper (summary screen) */
+    .cs-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bdr); }
+    .cs-row:last-child { border-bottom: none; }
+    .cs-name { font-size: 15px; font-weight: 700; min-width: 60px; }
+    .cs-step { display: flex; align-items: center; gap: 8px; }
+    .cs-btn { width: 32px; height: 32px; border: none; border-radius: 8px; background: var(--sur2); color: var(--txt); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cs-btn:active { opacity: .7; }
+    .cs-val { min-width: 36px; text-align: center; font-size: 16px; font-weight: 700; }
+    .cs-yen { font-size: 14px; font-weight: 700; min-width: 70px; text-align: right; }
+    /* absent toggle in edit mode */
+    .ci-abs { font-size: 11px; background: #334155; border: none; border-radius: 5px; color: #94a3b8; padding: 3px 5px; cursor: pointer; display: block; width: 100%; margin-top: 4px; }
+    .ci-abs.on { background: rgba(99,102,241,.3); color: var(--acc); }
+    /* confirm/cancel */
+    .ci-ok  { width: 100%; padding: 5px 0; margin-top: 4px; border: none; border-radius: 5px; background: var(--acc); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .ci-ok:active { opacity: .75; }
+    .ci-del { width: 100%; padding: 4px 0; margin-top: 3px; border: none; border-radius: 5px; background: #374151; color: #f87171; font-size: 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="hdr"><h1>🀄 三麻スコア</h1><button class="hb" onclick="newGame()">＋ 新規</button></div>
+  <div class="cnt" id="home-list"></div>
+</div>
+
+<!-- SETUP -->
+<div id="s-setup" class="screen">
+  <div class="hdr">
+    <button class="hb" onclick="show('s-home')">← 戻る</button>
+    <h1>ゲーム設定</h1><div style="width:56px"></div>
+  </div>
+  <div class="cnt">
+    <div class="card">
+      <div class="ct">プレイヤー数</div>
+      <div class="seg">
+        <button class="sb on" id="pc3" onclick="setPC(3)">3人打ち</button>
+        <button class="sb" id="pc4" onclick="setPC(4)">4人三麻</button>
+      </div>
+    </div>
+    <div class="card"><div class="ct">プレイヤー名</div><div id="pnames"></div></div>
+    <div class="card">
+      <div class="ct">ウマ</div>
+      <div class="seg">
+        <button class="sb on" id="uma1020" onclick="setUma('10-20')">10-20</button>
+        <button class="sb" id="uma1030" onclick="setUma('10-30')">10-30</button>
+      </div>
+      <div class="sm mt1" id="uma-note">1位+20 / 2位±0 / 3位-20 ／ 飛び-60</div>
+    </div>
+    <div class="card">
+      <div class="ct">点数レート（円 / 点）</div>
+      <div class="chips" id="pr-chips">
+        <button class="chip" data-v="0.3" onclick="setPR(0.3,this)">0.3</button>
+        <button class="chip on" data-v="0.5" onclick="setPR(0.5,this)">0.5</button>
+        <button class="chip" data-v="1.0" onclick="setPR(1.0,this)">1.0</button>
+        <button class="chip" data-v="2.0" onclick="setPR(2.0,this)">2.0</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">チップレート（円 / 枚）</div>
+      <div class="chips" id="cr-chips">
+        <button class="chip" data-v="50" onclick="setCR(50,this)">50</button>
+        <button class="chip on" data-v="100" onclick="setCR(100,this)">100</button>
+        <button class="chip" data-v="200" onclick="setCR(200,this)">200</button>
+        <button class="chip" data-v="500" onclick="setCR(500,this)">500</button>
+      </div>
+      <div class="mt1">
+        <label>カスタム（円/枚）</label>
+        <input type="number" id="cr-custom" placeholder="例: 300" inputmode="numeric" oninput="setCRcustom(this.value)">
+      </div>
+    </div>
+    <button class="btn btn-p mt2" onclick="startGame()">ゲーム開始</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="s-main" class="screen">
+  <div class="hdr">
+    <button class="hb" onclick="show('s-home');renderHome()">← ホーム</button>
+    <h1 id="main-title">スコア</h1>
+    <div style="width:56px"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" id="tab-h" onclick="switchTab('h')">点数票</button>
+    <button class="tab" id="tab-s" onclick="switchTab('s')">集計</button>
+  </div>
+  <div class="cnt" id="main-cnt"></div>
+</div>
+
+<script>
+const UMA  = { '10-20': [20,0,-20], '10-30': [30,0,-30] };
+const TOBI = { '10-20': 60, '10-30': 90 };
+const START = 35000, RET = 30000, OKA = (START-RET)*3/1000;
+
+let db = { games:[] };
+let cur = null;
+let setup = { pc:3, names:['','','',''], uma:'10-20', pr:0.5, cr:100 };
+let mainTab = 'h';
+let editKey = 'new';      // 'new' or round-index number
+let editAbsent = null;    // absent player index for current edit row
+
+function save() { localStorage.setItem('sanma3', JSON.stringify(db)); }
+function load() { try { db = JSON.parse(localStorage.getItem('sanma3')) || {games:[]}; } catch(e) { db={games:[]}; } }
+function game() { return db.games.find(g => g.id === cur); }
+function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+// ===== HOME =====
+function renderHome() {
+  const el = document.getElementById('home-list');
+  if (!db.games.length) {
+    el.innerHTML = `<div class="empty"><div class="big">🀄</div><div>ゲームがありません</div><div class="sm mt1">右上「＋ 新規」から開始</div></div>`;
+    return;
+  }
+  el.innerHTML = [...db.games].reverse().map(g => {
+    const d = new Date(g.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+    return `<div class="gcard" onclick="openGame('${g.id}')">
+      <div style="display:flex;justify-content:space-between"><strong>${d} のゲーム</strong><span class="sm">${g.rounds.length}半荘</span></div>
+      <div class="sm mt1">${g.s.players.slice(0,g.s.pc).join(' / ')}</div>
+      <div class="sm">ウマ ${g.s.uma}　${g.s.pr}円/点　チップ${g.s.cr}円</div>
+    </div>`;
+  }).join('');
+}
+
+function newGame() {
+  setup = {pc:3,names:['','','',''],uma:'10-20',pr:0.5,cr:100};
+  ['pc3','pc4','uma1020','uma1030'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('pc3').classList.add('on');
+  document.getElementById('uma1020').classList.add('on');
+  document.querySelectorAll('#pr-chips .chip').forEach(b=>b.classList.toggle('on',b.dataset.v==='0.5'));
+  document.querySelectorAll('#cr-chips .chip').forEach(b=>b.classList.toggle('on',b.dataset.v==='100'));
+  document.getElementById('cr-custom').value='';
+  renderPnames(); show('s-setup');
+}
+
+function openGame(id) {
+  cur = id; save();
+  const g = game();
+  document.getElementById('main-title').textContent = new Date(g.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+' ゲーム';
+  editKey = 'new'; editAbsent = null;
+  switchTab('h'); show('s-main');
+}
+
+// ===== SETUP =====
+function renderPnames() {
+  document.getElementById('pnames').innerHTML = Array.from({length:setup.pc},(_,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span class="sm" style="width:36px">P${i+1}</span>
+      <input type="text" placeholder="プレイヤー${i+1}" value="${setup.names[i]}" oninput="setup.names[${i}]=this.value" style="flex:1">
+    </div>`).join('');
+}
+function setPC(n) { setup.pc=n; document.getElementById('pc3').classList.toggle('on',n===3); document.getElementById('pc4').classList.toggle('on',n===4); renderPnames(); }
+function setUma(u) { setup.uma=u; document.getElementById('uma1020').classList.toggle('on',u==='10-20'); document.getElementById('uma1030').classList.toggle('on',u==='10-30'); document.getElementById('uma-note').textContent=`1位+${UMA[u][0]} / 2位±0 / 3位${UMA[u][2]} ／ 飛び-${TOBI[u]}`; }
+function setPR(v,btn) { setup.pr=v; document.querySelectorAll('#pr-chips .chip').forEach(b=>b.classList.toggle('on',b===btn)); }
+function setCR(v,btn) { setup.cr=v; document.querySelectorAll('#cr-chips .chip').forEach(b=>b.classList.toggle('on',b===btn)); document.getElementById('cr-custom').value=''; }
+function setCRcustom(v) { const n=parseFloat(v); if(n>0){ setup.cr=n; document.querySelectorAll('#cr-chips .chip').forEach(b=>b.classList.remove('on')); } }
+
+function startGame() {
+  const players = setup.names.slice(0,setup.pc).map((n,i)=>n.trim()||`P${i+1}`);
+  const g = { id:uid(), at:new Date().toISOString(), done:false, s:{pc:setup.pc,players,uma:setup.uma,pr:setup.pr,cr:setup.cr}, rounds:[] };
+  g.chips = Array(setup.pc).fill(0);
+  db.games.push(g); cur=g.id; save();
+  document.getElementById('main-title').textContent = new Date(g.at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})+' ゲーム';
+  editKey='new'; editAbsent=null;
+  switchTab('h'); show('s-main');
+}
+
+// ===== TABS =====
+function switchTab(t) {
+  mainTab=t;
+  document.getElementById('tab-h').classList.toggle('on',t==='h');
+  document.getElementById('tab-s').classList.toggle('on',t==='s');
+  t==='h' ? renderSheet() : renderSummary();
+}
+
+// ===== SCORE SHEET (inline editing) =====
+function renderSheet() {
+  const g = game();
+  const el = document.getElementById('main-cnt');
+  const {players, pc} = g.s;
+
+  const cum = new Array(pc).fill(0);
+
+  // thead
+  const thead = `<tr><th></th>${players.slice(0,pc).map(p=>`<th>${p}</th>`).join('')}</tr>`;
+
+  // completed round rows
+  const roundRows = g.rounds.map((r, ri) => {
+    r.totalPts.forEach((v,i)=>{ if(v!==null) cum[i]+=v; });
+    const snap = [...cum];
+    if (editKey === ri) return makeEditRow(ri, r.rn, pc, players, r);
+    return makeViewRow(r, snap, pc, players, ri);
+  }).join('');
+
+  // totals
+  const tots = new Array(pc).fill(0);
+  g.rounds.forEach(r => r.totalPts.forEach((v,i)=>{ if(v!==null) tots[i]+=v; }));
+  const totRow = g.rounds.length > 0 ? `<tr class="tr-tot">
+    <td class="rh">合計</td>
+    ${tots.map(t=>`<td class="dc" style="text-align:center"><div class="xv-big ${t>=0?'pos':'neg'}">${t>=0?'+':''}${t}</div></td>`).join('')}
+  </tr>` : '';
+
+  // new input row (always at bottom when game active)
+  const newRow = (!g.done && editKey === 'new') ? makeEditRow('new', g.rounds.length+1, pc, players, null) : '';
+
+  el.innerHTML = `
+    <div class="xwrap">
+      <table class="xtbl">
+        <thead>${thead}</thead>
+        <tbody>${roundRows}${totRow}${newRow}</tbody>
+      </table>
+    </div>
+    <div class="sm mt1" style="padding:0 2px">単位: 千点　行をタップで修正</div>
+  `;
+}
+
+function makeViewRow(r, snap, pc, players, ri) {
+  const hasTobi = r.tobiB && r.tobiB.some(v=>v<0);
+  const cells = players.slice(0,pc).map((_,i) => {
+    if (i === r.absentIdx) return `<td class="dc abs-cell" onclick="startEdit(${ri})">抜</td>`;
+    const v = r.totalPts[i];
+    return `<td class="dc" onclick="startEdit(${ri})">
+      <div class="xv-big ${v>=0?'pos':'neg'}">${v>=0?'+':''}${v}</div>
+    </td>`;
+  }).join('');
+  return `<tr onclick="startEdit(${ri})" style="cursor:pointer">
+    <td class="rh">${r.rn}局${hasTobi?'<br><span class="tobi-tag">飛</span>':''}</td>
+    ${cells}
+  </tr>`;
+}
+
+function makeEditRow(key, rn, pc, players, existing) {
+  const isNew = key === 'new';
+  const g = game();
+  const abIdx = editAbsent;
+
+  // row header
+  const rhContent = isNew
+    ? `${rn}局<br><button class="ci-ok" onclick="doConfirm('new')">✓ 確定</button>`
+    : `${rn}局<br><button class="ci-ok" onclick="doConfirm(${key})">✓</button><button class="ci-del" onclick="doDelete(${key})">削除</button>`;
+
+  const cells = players.slice(0, pc).map((p, i) => {
+    // Absent toggle (4人のみ)
+    if (g.s.pc === 4 && i === abIdx) {
+      return `<td class="dc-e abs-e">
+        <div class="sm" style="color:#4a5568">抜け番</div>
+        <button class="ci-abs on" onclick="toggleAbsent(${i},'${key}')">解除</button>
+      </td>`;
+    }
+    const prevScore = existing ? (existing.scores[i] || '') : '';
+    const absBtn = g.s.pc === 4 && abIdx !== i
+      ? `<button class="ci-abs" onclick="toggleAbsent(${i},'${key}')">抜番</button>`
+      : '';
+    return `<td class="dc-e">
+      <input class="ci-score" id="ei-${key}-${i}" type="number" value="${prevScore}" placeholder="点数" inputmode="numeric">
+      ${absBtn}
+    </td>`;
+  }).join('');
+
+  return `<tr class="tr-edit" id="erow-${key}">
+    <td class="rh">${rhContent}</td>
+    ${cells}
+  </tr>`;
+}
+
+function startEdit(ri) {
+  if (editKey === ri) return;
+  const r = game().rounds[ri];
+  editKey = ri;
+  editAbsent = r.absentIdx;
+  renderSheet();
+}
+
+function toggleAbsent(pi, key) {
+  editAbsent = editAbsent === pi ? null : pi;
+  renderSheet();
+  // restore score inputs after re-render
+}
+
+function doConfirm(key) {
+  const g = game();
+  const {pc, players, uma, pr, cr} = g.s;
+  const isNew = key === 'new';
+
+  if (pc===4 && editAbsent===null) { alert('抜け番を選択してください'); return; }
+
+  const playing = [];
+  for(let i=0;i<pc;i++) if(i!==editAbsent) playing.push(i);
+
+  const scores={};
+  for(const i of playing){
+    const sv = parseInt(document.getElementById(`ei-${key}-${i}`)?.value);
+    if(isNaN(sv)){ alert(`${players[i]}の点数を入力してください`); return; }
+    scores[i]=sv;
+  }
+
+  const total = playing.reduce((s,i)=>s+scores[i],0);
+  if(Math.abs(total-START*3)>200){
+    if(!confirm(`合計${total.toLocaleString()}点（本来${(START*3).toLocaleString()}点）。続行しますか？`)) return;
+  }
+
+  const s3 = playing.map(i=>scores[i]);
+  const res = compute(s3, {uma, pr});
+
+  const rn = isNew ? g.rounds.length+1 : g.rounds[key].rn;
+  const R = {
+    rn, absentIdx: editAbsent,
+    scores: Array(pc).fill(0),
+    raw: Array(pc).fill(null), umaB: Array(pc).fill(null),
+    okaB: Array(pc).fill(null), tobiB: Array(pc).fill(null),
+    totalPts: Array(pc).fill(null),
+    ptsYen: Array(pc).fill(0), rank: Array(pc).fill(null),
+  };
+  playing.forEach((pi,j)=>{
+    R.scores[pi]=s3[j];
+    R.raw[pi]=res.raw[j]; R.umaB[pi]=res.umaB[j];
+    R.okaB[pi]=res.okaB[j]; R.tobiB[pi]=res.tobiB[j];
+    R.totalPts[pi]=res.totalPts[j];
+    R.ptsYen[pi]=res.ptsYen[j]; R.rank[pi]=res.rank[j];
+  });
+
+  if(isNew){ g.rounds.push(R); }
+  else { g.rounds[key] = R; }
+
+  editKey='new'; editAbsent=null;
+  save(); renderSheet();
+}
+
+function doDelete(ri) {
+  if(!confirm('この半荘のデータを削除しますか？')) return;
+  const g = game();
+  g.rounds.splice(ri,1);
+  g.rounds.forEach((r,i)=>{ r.rn=i+1; });
+  editKey='new'; editAbsent=null;
+  save(); renderSheet();
+}
+
+// ===== COMPUTE =====
+function compute(s3, {uma, pr}) {
+  const raw = s3.map(s=>(s-RET)/1000);
+  const sorted = s3.map((s,i)=>({s,i})).sort((a,b)=>b.s-a.s||a.i-b.i);
+  const rank = new Array(3);
+  sorted.forEach((x,r)=>{ rank[x.i]=r; });
+  const uv = UMA[uma];
+  const umaB = rank.map(r=>uv[r]);
+  const okaB = rank.map(r=>r===0?OKA:0);
+  const tobiB = [0,0,0];
+  const tj = s3.findIndex(s=>s<=0);
+  if(tj!==-1){ const top=sorted[0].i; tobiB[tj]-=TOBI[uma]; tobiB[top]+=TOBI[uma]; }
+  const totalPts = raw.map((r,i)=>r+umaB[i]+okaB[i]+tobiB[i]);
+  const ptsYen = totalPts.map(p=>Math.round(p*1000*pr));
+  return {raw,umaB,okaB,tobiB,totalPts,ptsYen,rank};
+}
+
+// ===== SUMMARY =====
+function stepGameChip(pi, d) {
+  const g = game();
+  if (!g.chips) g.chips = Array(g.s.pc).fill(0);
+  g.chips[pi] = (g.chips[pi]||0) + d;
+  save();
+  renderSummary();
+}
+
+function renderSummary() {
+  const g = game();
+  const el = document.getElementById('main-cnt');
+  const {players,pc,uma,pr,cr} = g.s;
+  if (!g.chips) g.chips = Array(pc).fill(0);
+
+  const ptsY = Array(pc).fill(0);
+  g.rounds.forEach(r => r.ptsYen.forEach((y,i)=>{ ptsY[i]+=y; }));
+
+  const chipsYen = g.chips.map(c => c * cr);
+  const totals = ptsY.map((p,i) => p + chipsYen[i]);
+
+  const ranked = players.slice(0,pc)
+    .map((p,i)=>({p,i,t:totals[i],pts:ptsY[i],chp:chipsYen[i],chips:g.chips[i]}))
+    .sort((a,b)=>b.t-a.t);
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="ct">チップ枚数（獲得+　支払い−）</div>
+      ${players.slice(0,pc).map((p,i)=>`
+        <div class="cs-row">
+          <span class="cs-name">${p}</span>
+          <div class="cs-step">
+            <button class="cs-btn" onclick="stepGameChip(${i},-1)">−</button>
+            <span class="cs-val">${g.chips[i]>=0?'+':''}${g.chips[i]}</span>
+            <button class="cs-btn" onclick="stepGameChip(${i},1)">＋</button>
+          </div>
+          <span class="cs-yen ${chipsYen[i]>=0?'pos':'neg'}">${chipsYen[i]>=0?'+':''}${chipsYen[i].toLocaleString()}円</span>
+        </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="ct">最終収支（${g.rounds.length}半荘）</div>
+      ${ranked.map((r,ri)=>`
+        <div class="srow2">
+          <div>
+            <span class="rnk r${ri+1}" style="margin-right:8px">${ri+1}</span>
+            <span class="sname">${r.p}</span>
+            <div class="sm mt1" style="padding-left:30px">点数 ${r.pts>=0?'+':''}${r.pts.toLocaleString()}円　チップ ${r.chp>=0?'+':''}${r.chp.toLocaleString()}円</div>
+          </div>
+          <span class="samt ${r.t>=0?'pos':'neg'}">${r.t>=0?'+':''}${r.t.toLocaleString()}円</span>
+        </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="ct">設定</div>
+      <div class="sm">ウマ: ${uma}　飛び: -${TOBI[uma]}</div>
+      <div class="sm">点数: ${pr}円/点　チップ: ${cr}円/枚</div>
+    </div>
+    <button class="btn btn-d mt2" onclick="deleteGame()">ゲームを削除</button>
+  `;
+}
+
+function deleteGame() {
+  if(!confirm('このゲームのデータを削除しますか？')) return;
+  db.games = db.games.filter(g=>g.id!==cur);
+  cur=null; save(); renderHome(); show('s-home');
+}
+
+// ===== INIT =====
+load(); renderHome();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
