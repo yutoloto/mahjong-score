@@ -1,4 +1,4 @@
-const CACHE = "nakayama-v6";
+const CACHE = "nakayama-v7";
 const BASE = "/mahjong-score/";
 const URLS = [
   BASE,
@@ -23,19 +23,16 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
-  if (e.request.mode === "navigate") {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match(BASE + "index.html"))
-    );
-    return;
-  }
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      if (res && res.status === 200) {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-      }
-      return res;
-    }))
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(res => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => caches.match(BASE + "index.html"));
+    })
   );
 });
