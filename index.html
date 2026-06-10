@@ -617,6 +617,9 @@ function loadSessionToUI(){
   buildChips();
   buildSotenInputs();
   for(let i=0;i<s.rows.length;i++) updateRow(i);
+  if(s.inputMode==='soten'){
+    for(let i=0;i<s.rows.length;i++) updateSotenDiffLabels(i);
+  }
   renderPresets();
   // 場代
   const mode = s.venueMode ?? 'percent';
@@ -837,14 +840,28 @@ function calcSashimaPt(s){
   const sashimaPt=Array(s.numP).fill(0);
   if(!s.sashimaOn) return sashimaPt;
   const [a,b]=parseSashimaRate(s.sashimaRate);
+  const isSoten=s.inputMode==='soten';
   for(let i=0;i<s.rows.length;i++){
-    const vals=[]; let ok=true, sum=0;
-    for(let j=0;j<s.numP;j++){
-      const v=num(s.rows[i][j]);
-      if(v===null){ok=false;break;}
-      vals.push(v); sum+=v;
+    let valid=false;
+    const vals=[];
+    if(isSoten){
+      let sotenSum=0, ok=true;
+      for(let j=0;j<s.numP;j++){
+        const v=num(s.sotenRows?.[i]?.[j]);
+        if(v===null){ok=false;break;}
+        vals.push(v); sotenSum+=v;
+      }
+      valid = ok && Math.abs(sotenSum-(s.mochiPt??35000)*s.numP)<1;
+    } else {
+      let sum=0, ok=true;
+      for(let j=0;j<s.numP;j++){
+        const v=num(s.rows[i][j]);
+        if(v===null){ok=false;break;}
+        vals.push(v); sum+=v;
+      }
+      valid = ok && sum===0;
     }
-    if(!ok) continue;
+    if(!valid) continue;
     const order=vals.map((p,idx)=>({p,idx})).sort((a,b)=>b.p-a.p);
     if(s.numP===4){
       sashimaPt[order[0].idx]+=b*10;
@@ -890,6 +907,7 @@ function makeRow(i){
       } else {
         s.rows[i][j]=e.target.value;
       }
+      autoFillLast(i);
       autoExpand(i); updateRow(i); saveDB(); update();
     };
     inp.onkeydown=e=>{
@@ -909,6 +927,32 @@ function makeRow(i){
   diff.id='rd'+i;
   row.appendChild(diff);
   return row;
+}
+
+function autoFillLast(i){
+  const s=cur();
+  const soten=s.inputMode==='soten';
+  const src=soten?(ensureSotenRows(s),s.sotenRows):s.rows;
+  let emptyIdx=-1, sum=0, filled=0;
+  for(let j=0;j<s.numP;j++){
+    const v=num(src[i][j]);
+    if(v===null){
+      if(emptyIdx!==-1) return;
+      emptyIdx=j;
+    } else { sum+=v; filled++; }
+  }
+  if(emptyIdx===-1||filled!==s.numP-1) return;
+  const val=soten?(s.mochiPt??35000)*s.numP-sum:-sum;
+  src[i][emptyIdx]=String(val);
+  const inputs=document.querySelectorAll('#row'+i+' .row-cell input');
+  if(inputs[emptyIdx]){
+    inputs[emptyIdx].value=val;
+    inputs[emptyIdx].placeholder='自動';
+  }
+  if(soten){
+    convertSotenRow(i);
+    updateSotenDiffLabels(i);
+  }
 }
 
 function focusNext(ri,pi){
