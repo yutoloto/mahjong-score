@@ -1196,7 +1196,11 @@ function renderVenue(){
 loadDB();
 loadSessionToUI();
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js', {updateViaCache:'all'}).catch(()=>{});
+  navigator.serviceWorker.register('sw.js', {updateViaCache:'all'}).then(reg => {
+    if(!navigator.serviceWorker.controller) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+    }
+  }).catch(()=>{});
 }
 </script>
 </body>
