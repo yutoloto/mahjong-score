@@ -1,4 +1,4 @@
-const CACHE = "nakayama-v3";
+const CACHE = "nakayama-v4";
 const URLS = [
   "/mahjong-score/",
   "/mahjong-score/index.html",

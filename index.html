@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>中山 爆速スコア表</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{background:#0f172a;color:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding-bottom:72px}
@@ -1192,6 +1195,9 @@ function renderVenue(){
 // --- 起動 ---
 loadDB();
 loadSessionToUI();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
