@@ -794,6 +794,20 @@ function convertSotenRow(i){
   for(let j=0;j<s.numP;j++) s.rows[i][j]=String(diffs[j]);
 }
 
+function updateSotenDiffLabels(i){
+  const s=cur();
+  if(s.inputMode!=='soten') return;
+  for(let j=0;j<s.numP;j++){
+    const lbl=document.getElementById(`sdl${i}_${j}`);
+    if(!lbl) continue;
+    const v=num(s.rows[i][j]);
+    if(v===null){lbl.textContent='';continue;}
+    const pos=v>=0;
+    lbl.textContent=(pos?'+':'')+v;
+    lbl.style.color=pos?'#22c55e':'#ef4444';
+  }
+}
+
 function parseSashimaRate(r){
   const m=String(r||'1-2').match(/^(\d+)-(\d+)$/);
   return m?[parseInt(m[1]),parseInt(m[2])]:[1,2];
@@ -865,12 +879,14 @@ function makeRow(i){
     const soten=s.inputMode==='soten';
     if(soten) ensureSotenRows(s);
     inp.placeholder=soten?'35000':'—';
+    if(soten) inp.inputMode='text';
     inp.value=soten?s.sotenRows[i][j]:s.rows[i][j];
     inp.oninput=e=>{
       if(s.inputMode==='soten'){
         ensureSotenRows(s);
         s.sotenRows[i][j]=e.target.value;
         convertSotenRow(i);
+        updateSotenDiffLabels(i);
       } else {
         s.rows[i][j]=e.target.value;
       }
@@ -880,6 +896,12 @@ function makeRow(i){
       if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); focusNext(i,j); }
     };
     cell.appendChild(inp);
+    if(soten){
+      const lbl=document.createElement('div');
+      lbl.id=`sdl${i}_${j}`;
+      lbl.style.cssText='font-size:10px;color:#64748b;text-align:center;margin-top:1px;height:12px';
+      cell.appendChild(lbl);
+    }
     row.appendChild(cell);
   }
   const diff=document.createElement('div');
