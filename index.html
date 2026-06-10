@@ -280,12 +280,24 @@ button{cursor:pointer}
         <button id="modeSoten" onclick="setInputMode('soten')">素点</button>
       </div>
     </div>
-    <div id="kaeshiBox" class="rate-box" style="margin-top:10px;display:none">
-      <label>返し点</label>
-      <div class="rate-row">
-        <input type="number" inputmode="numeric" id="kaeshiPt" value="25000" oninput="onKaeshiChange()">
-        <span>点</span>
+    <div id="kaeshiBox" style="margin-top:10px;display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="rate-box">
+          <label>配給点（持ち点）</label>
+          <div class="rate-row">
+            <input type="number" inputmode="numeric" id="mochiPt" value="35000" oninput="onKaeshiChange()">
+            <span>点</span>
+          </div>
+        </div>
+        <div class="rate-box">
+          <label>返し点</label>
+          <div class="rate-row">
+            <input type="number" inputmode="numeric" id="kaeshiPt" value="40000" oninput="onKaeshiChange()">
+            <span>点</span>
+          </div>
+        </div>
       </div>
+      <div style="font-size:11px;color:#475569;margin-top:4px" id="okaLabel"></div>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
@@ -465,6 +477,7 @@ function createSession(){
     venueAmt: 0,
     venuePcts: ['','','',''],
     inputMode: 'diff',
+    mochiPt: 35000,
     kaeshiPt: 40000,
     sashimaOn: false,
     sashimaRate: '1-2',
@@ -584,6 +597,7 @@ function loadSessionToUI(){
   document.getElementById('btn4').className = s.numP===4?'on':'';
   // 入力モード・差し馬
   if(!s.inputMode) s.inputMode='diff';
+  if(s.mochiPt==null) s.mochiPt=35000;
   if(s.kaeshiPt==null) s.kaeshiPt=40000;
   if(s.sashimaOn==null) s.sashimaOn=false;
   if(!s.sashimaRate||typeof s.sashimaRate==='number') s.sashimaRate='1-2';
@@ -591,7 +605,9 @@ function loadSessionToUI(){
   document.getElementById('modeDiff').className = s.inputMode==='diff'?'on':'';
   document.getElementById('modeSoten').className = s.inputMode==='soten'?'on':'';
   document.getElementById('kaeshiBox').style.display = s.inputMode==='soten'?'':'none';
+  document.getElementById('mochiPt').value = s.mochiPt;
   document.getElementById('kaeshiPt').value = s.kaeshiPt;
+  updateOkaLabel(s);
   document.getElementById('sashimaOnChk').checked = s.sashimaOn;
   document.getElementById('sashimaRateBox').style.display = s.sashimaOn?'':'none';
   updateSashimaRateUI(s.sashimaRate);
@@ -728,9 +744,18 @@ function setInputMode(mode){
   update();
 }
 
+function updateOkaLabel(s){
+  const el=document.getElementById('okaLabel');
+  if(!el) return;
+  const oka=((s.kaeshiPt??40000)-(s.mochiPt??35000))*s.numP/1000;
+  el.textContent=`オカ: ${oka>=0?'+':''}${oka}千点 → 1位に加算`;
+}
+
 function onKaeshiChange(){
   const s=cur();
-  s.kaeshiPt=num(document.getElementById('kaeshiPt').value)??25000;
+  s.mochiPt=num(document.getElementById('mochiPt').value)??35000;
+  s.kaeshiPt=num(document.getElementById('kaeshiPt').value)??40000;
+  updateOkaLabel(s);
   if(s.inputMode==='soten'){
     for(let i=0;i<s.rows.length;i++){ convertSotenRow(i); updateRow(i); }
   }
@@ -753,14 +778,20 @@ function onSashimaRateChange(){
 function convertSotenRow(i){
   const s=cur();
   ensureSotenRows(s);
-  const kaeshi=s.kaeshiPt??25000;
+  const kaeshi=s.kaeshiPt??40000;
+  const mochi=s.mochiPt??35000;
   const vals=[]; let all=true;
   for(let j=0;j<s.numP;j++){
     const v=num(s.sotenRows[i][j]);
     vals.push(v);
     if(v===null) all=false;
   }
-  for(let j=0;j<s.numP;j++) s.rows[i][j]= all ? String((vals[j]-kaeshi)/1000) : '';
+  if(!all){ for(let j=0;j<s.numP;j++) s.rows[i][j]=''; return; }
+  const oka=(kaeshi-mochi)*s.numP/1000;
+  const topIdx=vals.reduce((mi,v,j)=>v>vals[mi]?j:mi,0);
+  const diffs=vals.map((v,j)=>(v-kaeshi)/1000);
+  diffs[topIdx]+=oka;
+  for(let j=0;j<s.numP;j++) s.rows[i][j]=String(diffs[j]);
 }
 
 function parseSashimaRate(r){
@@ -884,21 +915,32 @@ function autoExpand(ri){
 
 function updateRow(i){
   const s=cur();
-  let sum=0, hasVal=false;
-  for(let j=0;j<s.numP;j++){
-    const v=num(s.rows[i][j]);
-    if(v!==null){sum+=v;hasVal=true;}
+  const soten=s.inputMode==='soten';
+  let sum=0, hasVal=false, allFilled=true;
+  if(soten){
+    for(let j=0;j<s.numP;j++){
+      const v=num(s.sotenRows?.[i]?.[j]);
+      if(v!==null){sum+=v;hasVal=true;} else allFilled=false;
+    }
+  } else {
+    allFilled=false;
+    for(let j=0;j<s.numP;j++){
+      const v=num(s.rows[i][j]);
+      if(v!==null){sum+=v;hasVal=true;}
+    }
   }
   const rowEl=document.getElementById('row'+i);
   const numEl=document.getElementById('rn'+i);
   const diffEl=document.getElementById('rd'+i);
   if(!rowEl) return;
+  const expected=soten?(s.mochiPt??35000)*s.numP:0;
+  const valid=soten?allFilled&&sum===expected:hasVal&&sum===0;
   if(!hasVal){
     rowEl.className='grid-row empty';
     numEl.className='row-num dim';
     diffEl.textContent='';
     diffEl.className='row-diff';
-  } else if(sum===0){
+  } else if(valid){
     rowEl.className='grid-row valid';
     numEl.className='row-num';
     diffEl.textContent='✓';
@@ -906,7 +948,8 @@ function updateRow(i){
   } else {
     rowEl.className='grid-row invalid';
     numEl.className='row-num';
-    diffEl.textContent=(sum>0?'+':'')+sum;
+    if(soten){ const d=sum-expected; diffEl.textContent=(d>0?'+':'')+d; }
+    else{ diffEl.textContent=(sum>0?'+':'')+sum; }
     diffEl.className='row-diff err';
   }
 }
