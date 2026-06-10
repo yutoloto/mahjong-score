@@ -4,35 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>中山 爆速スコア表</title>
-<link rel="manifest" href="/mahjong-score/manifest.json">
-<meta name="theme-color" content="#0f172a">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="中山スコア">
-<link rel="apple-touch-icon" href="/mahjong-score/icon-192.png">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-body{background:#0f172a;color:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding:12px;padding-bottom:40px}
+body{background:#0f172a;color:#f1f5f9;font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding-bottom:72px}
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 input[type=number]{-moz-appearance:textfield}
 ::-webkit-scrollbar{height:4px;width:4px}
 ::-webkit-scrollbar-track{background:#1e293b}
 ::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+button{cursor:pointer}
 
-.wrap{max-width:500px;margin:0 auto}
+/* ページ */
+.page{display:none;padding:12px;max-width:500px;margin:0 auto}
+.page.active{display:block}
 
-.hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.hd h1{font-size:22px;font-weight:900;color:#fff;letter-spacing:.02em}
+/* ボトムナビ */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;display:flex;z-index:100}
+#bottom-nav button{flex:1;padding:10px 0 14px;border:none;background:transparent;color:#475569;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:color .15s}
+#bottom-nav button .icon{font-size:20px;line-height:1}
+#bottom-nav button.active{color:#3b82f6}
+
+/* ヘッダー */
+.hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.hd h1{font-size:20px;font-weight:900;color:#fff}
 .hd p{font-size:11px;color:#64748b}
+.hd-right{margin-left:auto;display:flex;gap:6px}
 
+/* カード */
 .card{background:#1e293b;border-radius:16px;padding:16px;margin-bottom:12px}
+.section-title{font-size:13px;font-weight:700;color:#cbd5e1;margin-bottom:10px}
 
+/* 設定 */
 .cfg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cfg-top span{font-size:13px;font-weight:700;color:#cbd5e1}
 .toggle{display:flex;border-radius:10px;overflow:hidden;border:1px solid #475569}
-.toggle button{padding:6px 16px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#334155;color:#94a3b8;transition:all .15s}
+.toggle button{padding:6px 16px;font-size:13px;font-weight:700;border:none;background:#334155;color:#94a3b8;transition:all .15s}
 .toggle button.on{background:#2563eb;color:#fff}
 .rates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .rate-box{background:#0f172a;border-radius:12px;padding:12px}
@@ -41,6 +48,25 @@ input[type=number]{-moz-appearance:textfield}
 .rate-row input{background:transparent;border:none;outline:none;color:#fff;font-size:18px;font-weight:700;width:100%;text-align:right}
 .rate-row span{color:#64748b;font-size:13px;flex-shrink:0}
 
+/* プリセット */
+.preset-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.preset-chip{display:flex;align-items:center;gap:4px;background:#0f172a;border:1px solid #334155;border-radius:20px;padding:4px 10px 4px 12px;font-size:12px;color:#cbd5e1}
+.preset-chip button{background:none;border:none;color:#64748b;font-size:14px;line-height:1;padding:0 2px}
+.preset-chip button:hover{color:#f87171}
+.preset-save-row{display:flex;gap:6px;margin-top:8px}
+.preset-save-row input{flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:6px 10px;font-size:13px;color:#fff;outline:none}
+.preset-save-row input:focus{border-color:#3b82f6}
+.btn-sm{padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:700}
+.btn-blue{background:#1d4ed8;color:#fff}
+.btn-red{background:#7f1d1d;color:#fca5a5}
+.btn-gray{background:#334155;color:#cbd5e1}
+
+/* セッション名 */
+.session-bar{display:flex;align-items:center;gap:8px;background:#1e293b;border-radius:12px;padding:10px 14px;margin-bottom:12px}
+.session-bar input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:14px;font-weight:700}
+.session-bar span{font-size:11px;color:#475569;flex-shrink:0}
+
+/* グリッド */
 .grid-wrap{background:#0f172a;border-radius:16px;overflow:hidden;margin-bottom:12px}
 .grid-head{background:#0f172a;border-bottom:1px solid #1e293b;padding:8px 8px 4px}
 .grid-head-row{display:flex;gap:4px;align-items:center}
@@ -53,7 +79,6 @@ input[type=number]{-moz-appearance:textfield}
 .grid-status span{font-size:11px;color:#475569}
 .err-badge{font-size:11px;font-weight:700;color:#f87171;animation:blink 1.5s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
-
 .grid-body{overflow-y:auto;max-height:55vh}
 .grid-row{display:flex;gap:4px;align-items:center;padding:2px 8px;border-radius:8px;margin:1px 4px}
 .grid-row.valid{background:#1e293b}
@@ -69,12 +94,12 @@ input[type=number]{-moz-appearance:textfield}
 .row-diff{width:36px;flex-shrink:0;text-align:center;font-size:12px;font-weight:700;font-family:monospace}
 .row-diff.err{color:#f87171;animation:blink 1.5s ease-in-out infinite}
 .row-diff.ok{color:#4ade80;font-size:11px}
-
-.add-btn{width:100%;margin:8px 0 4px;padding:8px;border-radius:10px;background:transparent;border:1px dashed #334155;color:#64748b;font-size:12px;cursor:pointer}
+.add-btn{width:100%;margin:8px 0 4px;padding:8px;border-radius:10px;background:transparent;border:1px dashed #334155;color:#64748b;font-size:12px}
 .add-btn:hover{border-color:#475569;color:#94a3b8}
 
+/* チップ */
 .chip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.chip-title{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fde68a}
+.chip-title{font-size:13px;font-weight:700;color:#fde68a}
 .chip-ok{font-size:12px;font-weight:700;color:#4ade80}
 .chip-err{font-size:12px;font-weight:700;color:#f87171;animation:blink 1.5s ease-in-out infinite}
 .chip-cols{display:flex;gap:8px}
@@ -86,9 +111,8 @@ input[type=number]{-moz-appearance:textfield}
 .chip-col input:focus{background:rgba(251,191,36,.08);border-radius:6px}
 .chip-col .unit{font-size:11px;color:#64748b;margin-top:2px}
 
-.result-title{font-size:13px;font-weight:700;color:#cbd5e1;margin-bottom:12px}
-.result-items{display:flex;flex-direction:column;gap:10px}
-.result-item{background:#0f172a;border-radius:12px;padding:12px}
+/* 結果 */
+.result-item{background:#0f172a;border-radius:12px;padding:12px;margin-bottom:8px}
 .result-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
 .result-name{font-weight:700;color:#fff;font-size:15px}
 .result-yen{font-size:24px;font-weight:900;font-family:monospace}
@@ -104,13 +128,96 @@ input[type=number]{-moz-appearance:textfield}
 .result-bar-fill.neg{background:#ef4444;left:50%}
 .result-bar-mid{position:absolute;left:50%;top:0;width:1px;height:100%;background:#334155}
 .rate-note{text-align:center;font-size:11px;color:#475569;margin-top:12px;padding-top:12px;border-top:1px solid #1e293b}
+
+/* 履歴 */
+.history-item{background:#1e293b;border-radius:14px;padding:14px;margin-bottom:10px;position:relative}
+.history-item.current{border:1px solid #2563eb}
+.history-badge{position:absolute;top:10px;right:10px;background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.history-date{font-size:12px;color:#64748b;margin-bottom:4px}
+.history-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px}
+.history-players{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.history-player{font-size:12px;padding:2px 10px;border-radius:99px;font-weight:700}
+.history-player.pos{background:rgba(59,130,246,.15);color:#60a5fa}
+.history-player.neg{background:rgba(239,68,68,.15);color:#f87171}
+.history-player.zero{background:#1e293b;color:#64748b}
+.history-actions{display:flex;gap:6px}
+.history-games{font-size:11px;color:#475569;margin-bottom:6px}
+.new-session-btn{width:100%;padding:14px;border-radius:14px;border:2px dashed #334155;background:transparent;color:#64748b;font-size:14px;font-weight:700;margin-bottom:10px}
+.new-session-btn:hover{border-color:#475569;color:#94a3b8}
+
+/* 統計 */
+.stats-player{background:#1e293b;border-radius:14px;padding:14px;margin-bottom:10px}
+.stats-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:10px}
+.stats-total{font-size:28px;font-weight:900;font-family:monospace;margin-bottom:4px}
+.stats-total.pos{color:#60a5fa}
+.stats-total.neg{color:#f87171}
+.stats-total.zero{color:#64748b}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stats-cell{background:#0f172a;border-radius:10px;padding:8px 12px}
+.stats-cell .label{font-size:10px;color:#64748b;margin-bottom:2px}
+.stats-cell .val{font-size:15px;font-weight:700;color:#cbd5e1}
+.stats-cell .val.pos{color:#60a5fa}
+.stats-cell .val.neg{color:#f87171}
+.stats-empty{text-align:center;color:#475569;padding:40px 0;font-size:14px}
+
+/* ユーザー登録 */
+.user-card{background:#1e293b;border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.user-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-info .uname{font-size:16px;font-weight:700;color:#fff}
+.user-info .ustats{font-size:11px;color:#64748b;margin-top:2px}
+.user-info .utotal{font-size:14px;font-weight:700;font-family:monospace;margin-top:2px}
+.user-info .utotal.pos{color:#60a5fa}
+.user-info .utotal.neg{color:#f87171}
+.user-info .utotal.zero{color:#475569}
+.user-add-form{background:#1e293b;border-radius:14px;padding:14px;margin-bottom:12px;display:flex;gap:8px}
+.user-add-form input{flex:1;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:10px 12px;font-size:15px;color:#fff;outline:none}
+.user-add-form input:focus{border-color:#3b82f6}
+
+/* プレイヤーピッカー */
+.col-p{position:relative}
+.user-pick-btn{position:absolute;right:2px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:14px;color:#475569;padding:4px;line-height:1}
+.user-picker{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1e293b;border:1px solid #334155;border-radius:12px;z-index:200;max-height:180px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.user-picker-item{padding:10px 14px;font-size:14px;font-weight:600;color:#cbd5e1;cursor:pointer;border-bottom:1px solid #0f172a}
+.user-picker-item:last-child{border-bottom:none}
+.user-picker-item:hover{background:#334155}
+
+/* 場代 */
+.venue-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#0f172a;border-radius:12px;margin-bottom:6px}
+.venue-name{font-weight:700;color:#fff;font-size:14px;width:60px;flex-shrink:0}
+.venue-bar-wrap{flex:1;height:6px;background:#1e293b;border-radius:99px;overflow:hidden}
+.venue-bar-inner{height:100%;background:#6366f1;border-radius:99px;transition:width .4s}
+.venue-pct{font-size:12px;color:#818cf8;font-family:monospace;width:38px;text-align:right;flex-shrink:0}
+.venue-pay{font-size:16px;font-weight:800;font-family:monospace;color:#fff;width:80px;text-align:right;flex-shrink:0}
+.venue-total{display:flex;justify-content:space-between;padding:10px 4px 2px;font-size:12px;color:#64748b;border-top:1px solid #1e293b;margin-top:4px}
+.venue-total b{color:#a5b4fc}
+.venue-note{font-size:11px;color:#475569;margin-top:8px;text-align:center}
+.venue-pool{background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:14px;padding:14px;margin-bottom:12px;text-align:center}
+.venue-pool .label{font-size:11px;color:#a5b4fc;margin-bottom:4px}
+.venue-pool .amount{font-size:32px;font-weight:900;font-family:monospace;color:#c7d2fe}
+.venue-pool .sub{font-size:11px;color:#6366f1;margin-top:2px}
+.venue-adj-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#0f172a;border-radius:10px;margin-bottom:5px}
+.venue-adj-name{font-weight:700;color:#fff;font-size:13px}
+.venue-adj-detail{font-size:11px;color:#64748b;margin-top:1px}
+.venue-adj-yen{font-size:18px;font-weight:800;font-family:monospace}
+.venue-adj-yen.pos{color:#60a5fa}
+.venue-adj-yen.neg{color:#f87171}
+.pct-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pct-row .pname{font-size:13px;font-weight:700;color:#cbd5e1;width:60px;flex-shrink:0}
+.pct-row input{flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:6px 8px;font-size:15px;font-weight:700;color:#818cf8;text-align:right;outline:none;width:0}
+.pct-row input:focus{border-color:#6366f1}
+.pct-row .punit{font-size:13px;color:#475569;flex-shrink:0}
+.pct-sum{text-align:right;font-size:12px;margin-bottom:8px}
+.pct-sum.ok{color:#4ade80}
+.pct-sum.err{color:#f87171}
 </style>
 </head>
 <body>
-<div class="wrap">
 
+<!-- スコアページ -->
+<div id="page-score" class="page active">
   <div class="hd">
-    <svg width="44" height="56" viewBox="0 0 48 62">
+    <svg width="40" height="50" viewBox="0 0 48 62">
       <rect x="1" y="1" width="46" height="60" rx="6" fill="#f5f0e8" stroke="#b0956e" stroke-width="1.5"/>
       <rect x="3.5" y="3.5" width="41" height="55" rx="4" fill="none" stroke="#b0956e" stroke-width=".7"/>
       <text x="24" y="44" text-anchor="middle" font-family="serif" font-size="34" font-weight="900" fill="#cc0000">中山</text>
@@ -119,9 +226,26 @@ input[type=number]{-moz-appearance:textfield}
       <h1>爆速スコア表</h1>
       <p>麻雀精算リアルタイム計算</p>
     </div>
+    <div class="hd-right">
+      <button class="btn-sm btn-gray" onclick="newSession()" style="font-size:11px">次のセッション</button>
+      <button class="btn-sm btn-red" onclick="resetAll()">リセット</button>
+    </div>
   </div>
 
-  <div class="card" id="settings">
+  <!-- セッション名・メモ -->
+  <div class="session-bar">
+    <input id="sessionName" placeholder="セッション名（例：6/10 渋谷）" oninput="updateSessionName()">
+    <span id="sessionDate"></span>
+  </div>
+  <div style="background:#1e293b;border-radius:12px;padding:10px 14px;margin-bottom:12px">
+    <div style="font-size:11px;color:#64748b;margin-bottom:6px">📝 メモ</div>
+    <textarea id="sessionMemo" placeholder="備考・メモを入力（例：今日の総評、特記事項など）"
+      oninput="updateSessionMemo()"
+      style="width:100%;background:transparent;border:none;outline:none;color:#cbd5e1;font-size:13px;resize:none;min-height:60px;line-height:1.6"></textarea>
+  </div>
+
+  <!-- 設定 -->
+  <div class="card">
     <div class="cfg-top">
       <span>設定</span>
       <div class="toggle">
@@ -145,8 +269,10 @@ input[type=number]{-moz-appearance:textfield}
         </div>
       </div>
     </div>
+
   </div>
 
+  <!-- グリッド -->
   <div class="grid-wrap">
     <div class="grid-head">
       <div class="grid-head-row" id="headRow"></div>
@@ -158,7 +284,8 @@ input[type=number]{-moz-appearance:textfield}
     <div class="grid-body" id="gridBody"></div>
   </div>
 
-  <div class="card" id="chipPanel">
+  <!-- チップ -->
+  <div class="card">
     <div class="chip-head">
       <div class="chip-title">🪙 チップ（セッション合計）</div>
       <span id="chipStatus"></span>
@@ -166,162 +293,446 @@ input[type=number]{-moz-appearance:textfield}
     <div class="chip-cols" id="chipCols"></div>
   </div>
 
+  <!-- 結果 -->
   <div class="card">
-    <div class="result-title">精算結果</div>
-    <div class="result-items" id="results"></div>
+    <div class="section-title">精算結果</div>
+    <div id="results"></div>
     <div class="rate-note" id="rateNote"></div>
   </div>
 
+  <!-- 場代 -->
+  <div class="card">
+    <div class="section-title">🏠 場代システム</div>
+
+    <!-- モード切替 -->
+    <div class="toggle" style="width:100%;margin-bottom:14px">
+      <button id="vModeAuto" style="flex:1" onclick="setVenueMode('auto')">自動天引き</button>
+      <button id="vModePct" class="on" style="flex:1" onclick="setVenueMode('percent')">後払い割り勘</button>
+    </div>
+
+    <!-- 自動天引き設定 -->
+    <div id="venueAutoSettings" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="rate-box">
+          <label>レーキ（1局あたり）</label>
+          <div class="rate-row">
+            <input type="number" inputmode="numeric" id="venueRake" value="100" oninput="saveVenueSettings();renderVenue()">
+            <span>pt</span>
+          </div>
+        </div>
+        <div class="rate-box">
+          <label>天引き対象</label>
+          <div class="toggle" style="margin-top:4px">
+            <button id="vTargetTop" class="on" onclick="setRakeTarget('top')" style="flex:1;font-size:11px;padding:5px 4px">トップのみ</button>
+            <button id="vTargetAll" onclick="setRakeTarget('equal')" style="flex:1;font-size:11px;padding:5px 4px">全員均等</button>
+          </div>
+        </div>
+      </div>
+      <div id="venueResult"></div>
+    </div>
+
+    <!-- パーセンテージ設定 -->
+    <div id="venuePctSettings">
+      <div class="rate-box" style="margin-bottom:12px">
+        <label>場代合計</label>
+        <div class="rate-row">
+          <input type="number" inputmode="numeric" id="venueAmt" placeholder="0" oninput="saveVenueSettings();renderVenue()">
+          <span>円</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span>負担割合（合計100%）</span>
+        <button class="btn-sm btn-gray" onclick="resetPcts()" style="font-size:11px;padding:4px 10px">自動計算に戻す</button>
+      </div>
+      <div id="pctInputs"></div>
+      <div id="pctSumLabel" class="pct-sum"></div>
+      <div id="venueResult2"></div>
+    </div>
+  </div>
 </div>
+
+<!-- 履歴ページ -->
+<div id="page-history" class="page">
+  <div style="padding-top:4px;margin-bottom:16px">
+    <div style="font-size:20px;font-weight:900;color:#fff">セッション履歴</div>
+    <div style="font-size:11px;color:#64748b">過去のセッションを確認・切り替えできます</div>
+  </div>
+  <button class="new-session-btn" onclick="newSession()">＋ 新しいセッションを開始</button>
+  <div id="historyList"></div>
+</div>
+
+<!-- ユーザーページ -->
+<div id="page-users" class="page">
+  <div style="padding-top:4px;margin-bottom:16px">
+    <div style="font-size:20px;font-weight:900;color:#fff">ユーザー登録</div>
+    <div style="font-size:11px;color:#64748b">メンバーを登録して成績を管理</div>
+  </div>
+  <div class="user-add-form">
+    <input id="newUserName" placeholder="名前を入力" maxlength="8">
+    <button class="btn-sm btn-blue" onclick="addUser()">追加</button>
+  </div>
+  <div id="userList"></div>
+</div>
+
+<!-- ボトムナビ -->
+<nav id="bottom-nav">
+  <button class="active" onclick="showPage('score')">
+    <span class="icon">📊</span>スコア
+  </button>
+  <button onclick="showPage('history')">
+    <span class="icon">📋</span>履歴
+  </button>
+  <button onclick="showPage('users')">
+    <span class="icon">👤</span>ユーザー
+  </button>
+</nav>
 
 <script>
 const INIT_ROWS = 40;
 const AUTO_ADD = 5;
+const DB_KEY = 'mahjong_db_v2';
 
-let numP = 3;
-let players = ['Aさん','Bさん','Cさん','Dさん'];
-let rows = Array.from({length:INIT_ROWS}, () => Array(4).fill(''));
-let chips = ['','','',''];
+// --- DB ---
+let DB = { sessions:[], currentId:null, presets:[] };
 
-function num(v){ if(v===''||v==='-'||v==='+') return null; const n=+v; return isNaN(n)?null:n; }
-
-function rowDiff(ri){
-  let s=0, hasVal=false;
-  for(let j=0;j<numP;j++){ const v=num(rows[ri][j]); if(v!==null){s+=v;hasVal=true;} }
-  return {diff:s, empty:!hasVal};
+function saveDB(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){}
 }
 
-function chipSum(){
-  let s=0;
-  for(let j=0;j<numP;j++) s+=(num(chips[j])??0);
-  return s;
+function loadDB(){
+  try{
+    const s = localStorage.getItem(DB_KEY);
+    if(s) DB = JSON.parse(s);
+  }catch(e){}
+  if(!DB.sessions) DB.sessions = [];
+  if(!DB.presets) DB.presets = [];
+  if(!DB.users) DB.users = [];
+  if(!DB.currentId || !DB.sessions.find(s=>s.id===DB.currentId)){
+    if(DB.sessions.length>0) DB.currentId = DB.sessions[DB.sessions.length-1].id;
+    else{ const s=createSession(); DB.sessions.push(s); DB.currentId=s.id; }
+  }
 }
 
-function setPlayers(n){
-  numP=n;
-  document.getElementById('btn3').className=n===3?'on':'';
-  document.getElementById('btn4').className=n===4?'on':'';
+function createSession(){
+  const now = new Date();
+  const dateStr = `${now.getMonth()+1}/${now.getDate()} セッション`;
+  return {
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2),
+    name: dateStr,
+    date: now.toISOString(),
+    numP: 3,
+    players: ['Aさん','Bさん','Cさん','Dさん'],
+    rows: Array.from({length:INIT_ROWS}, ()=>Array(4).fill('')),
+    chips: ['','','',''],
+    ptRate: 10,
+    chipRate: 50,
+    venueMode: 'percent',
+    venueRake: 100,
+    venueRakeTarget: 'top',
+    venueAmt: 0,
+    venuePcts: ['','','','']
+  };
+}
+
+function cur(){ return DB.sessions.find(s=>s.id===DB.currentId); }
+
+// --- ページ切り替え ---
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('#bottom-nav button').forEach((b,i)=>{
+    b.classList.toggle('active', ['score','history','users'][i]===name);
+  });
+  if(name==='history') renderHistory();
+  if(name==='users') renderUsers();
+}
+
+// --- セッション管理 ---
+function updateSessionName(){
+  cur().name = document.getElementById('sessionName').value;
+  saveDB();
+}
+
+function updateSessionMemo(){
+  cur().memo = document.getElementById('sessionMemo').value;
+  saveDB();
+}
+
+function newSession(){
+  const s = createSession();
+  DB.sessions.push(s);
+  DB.currentId = s.id;
+  saveDB();
+  loadSessionToUI();
+  showPage('score');
+}
+
+function renameSession(id, name){
+  const s = DB.sessions.find(s=>s.id===id);
+  if(s){ s.name=name; saveDB(); }
+  if(id===DB.currentId) document.getElementById('sessionName').value=name;
+}
+
+function switchSession(id){
+  DB.currentId = id;
+  saveDB();
+  loadSessionToUI();
+  showPage('score');
+}
+
+function deleteSession(id){
+  if(DB.sessions.length<=1){ alert('最後のセッションは削除できません'); return; }
+  if(!confirm('このセッションを削除しますか？')) return;
+  DB.sessions = DB.sessions.filter(s=>s.id!==id);
+  if(DB.currentId===id) DB.currentId = DB.sessions[DB.sessions.length-1].id;
+  saveDB();
+  renderHistory();
+}
+
+// --- プリセット ---
+function savePreset(){
+  const nm = document.getElementById('presetNameInput').value.trim();
+  if(!nm){ alert('プリセット名を入力してください'); return; }
+  DB.presets.push({ name:nm, players:[...cur().players] });
+  document.getElementById('presetNameInput').value='';
+  saveDB();
+  renderPresets();
+}
+
+function loadPreset(idx){
+  const p = DB.presets[idx];
+  if(!p) return;
+  cur().players = [...p.players];
+  saveDB();
   buildHead();
-  buildGrid();
   buildChips();
   update();
 }
 
+function deletePreset(idx){
+  DB.presets.splice(idx,1);
+  saveDB();
+  renderPresets();
+}
+
+function renderPresets(){
+  const el = document.getElementById('presetList');
+  el.innerHTML='';
+  if(DB.presets.length===0){
+    el.innerHTML='<span style="font-size:11px;color:#475569">プリセットなし</span>';
+    return;
+  }
+  DB.presets.forEach((p,i)=>{
+    const chip=document.createElement('div');
+    chip.className='preset-chip';
+    chip.innerHTML=`<span onclick="loadPreset(${i})" style="cursor:pointer">${p.name}</span><button onclick="deletePreset(${i})">×</button>`;
+    el.appendChild(chip);
+  });
+}
+
+// --- UI ロード ---
+function loadSessionToUI(){
+  const s = cur();
+  // セッション名・日付・メモ
+  document.getElementById('sessionName').value = s.name;
+  const d = new Date(s.date);
+  document.getElementById('sessionDate').textContent =
+    `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+  document.getElementById('sessionMemo').value = s.memo || '';
+  // 設定
+  document.getElementById('ptRate').value = s.ptRate;
+  document.getElementById('chipRate').value = s.chipRate;
+  document.getElementById('btn3').className = s.numP===3?'on':'';
+  document.getElementById('btn4').className = s.numP===4?'on':'';
+  // グリッド・チップ
+  buildHead();
+  buildGrid();
+  buildChips();
+  for(let i=0;i<s.rows.length;i++) updateRow(i);
+  renderPresets();
+  // 場代
+  const mode = s.venueMode ?? 'percent';
+  setVenueMode(mode);
+  if(document.getElementById('venueRake')) document.getElementById('venueRake').value = s.venueRake ?? 100;
+  if(document.getElementById('venueAmt'))  document.getElementById('venueAmt').value  = s.venueAmt  ?? '';
+  setRakeTarget(s.venueRakeTarget ?? 'top');
+  buildPctInputs();
+  update();
+}
+
+// --- スコア UI ---
+function setPlayers(n){
+  cur().numP=n;
+  document.getElementById('btn3').className=n===3?'on':'';
+  document.getElementById('btn4').className=n===4?'on':'';
+  saveDB();
+  buildHead(); buildGrid(); buildChips(); update();
+}
+
 function buildHead(){
+  const s=cur();
   const el=document.getElementById('headRow');
   el.innerHTML='';
-  el.innerHTML+='<div class="col-num">#</div>';
-  for(let j=0;j<numP;j++){
+
+  const numDiv=document.createElement('div');
+  numDiv.className='col-num';
+  numDiv.textContent='#';
+  el.appendChild(numDiv);
+
+  for(let j=0;j<s.numP;j++){
     const d=document.createElement('div');
     d.className='col-p';
+
     const inp=document.createElement('input');
-    inp.value=players[j];
+    inp.value=s.players[j];
     inp.maxLength=6;
-    inp.dataset.pi=j;
-    inp.oninput=e=>{players[j]=e.target.value; refreshChipNames(); update();};
+    inp.oninput=e=>{s.players[j]=e.target.value; saveDB(); refreshChipNames(); update();};
+    inp.onclick=e=>{e.stopPropagation(); openUserPicker(j, d);};
+
     d.appendChild(inp);
     el.appendChild(d);
   }
-  el.innerHTML+='<div class="col-diff">ズレ</div>';
+
+  const diffDiv=document.createElement('div');
+  diffDiv.className='col-diff';
+  diffDiv.textContent='ズレ';
+  el.appendChild(diffDiv);
+}
+
+// --- ユーザーピッカー ---
+let pickerOpen = -1;
+function openUserPicker(j, container){
+  // 既存ピッカーを閉じる
+  document.querySelectorAll('.user-picker').forEach(p=>p.remove());
+  if(pickerOpen===j){pickerOpen=-1;return;}
+  pickerOpen=j;
+  if(DB.users.length===0){
+    alert('先にユーザーを登録してください（ユーザータブから）');
+    pickerOpen=-1;
+    return;
+  }
+  const picker=document.createElement('div');
+  picker.className='user-picker';
+  DB.users.forEach(u=>{
+    const item=document.createElement('div');
+    item.className='user-picker-item';
+    item.textContent=u.name;
+    item.onclick=()=>{
+      const s=cur();
+      s.players[j]=u.name;
+      if(!s.playerIds) s.playerIds=Array(4).fill(null);
+      s.playerIds[j]=u.id;
+      saveDB();
+      buildHead(); buildChips(); update();
+      document.querySelectorAll('.user-picker').forEach(p=>p.remove());
+      pickerOpen=-1;
+    };
+    picker.appendChild(item);
+  });
+  container.appendChild(picker);
+  // 外クリックで閉じる
+  setTimeout(()=>{
+    document.addEventListener('click', function close(){
+      document.querySelectorAll('.user-picker').forEach(p=>p.remove());
+      pickerOpen=-1;
+      document.removeEventListener('click',close);
+    },{once:true});
+  },0);
 }
 
 function buildGrid(){
+  const s=cur();
   const body=document.getElementById('gridBody');
   body.innerHTML='';
-  for(let i=0;i<rows.length;i++) body.appendChild(makeRow(i));
+  for(let i=0;i<s.rows.length;i++) body.appendChild(makeRow(i));
   const btn=document.createElement('button');
   btn.className='add-btn';
   btn.textContent='＋ 10行追加';
   btn.onclick=()=>{
-    for(let k=0;k<10;k++) rows.push(Array(4).fill(''));
+    for(let k=0;k<10;k++) s.rows.push(Array(4).fill(''));
     const b=document.getElementById('gridBody');
     const addBtn=b.lastElementChild;
-    for(let k=rows.length-10;k<rows.length;k++){
-      b.insertBefore(makeRow(k),addBtn);
-    }
-    update();
+    for(let k=s.rows.length-10;k<s.rows.length;k++) b.insertBefore(makeRow(k),addBtn);
+    saveDB(); update();
   };
   body.appendChild(btn);
 }
 
 function makeRow(i){
+  const s=cur();
   const row=document.createElement('div');
   row.className='grid-row empty';
   row.id='row'+i;
-
   const numEl=document.createElement('div');
   numEl.className='row-num dim';
   numEl.id='rn'+i;
   numEl.textContent=i+1;
   row.appendChild(numEl);
-
-  for(let j=0;j<numP;j++){
+  for(let j=0;j<s.numP;j++){
     const cell=document.createElement('div');
     cell.className='row-cell';
     const inp=document.createElement('input');
     inp.type='number';
     inp.inputMode='numeric';
     inp.placeholder='—';
-    inp.value=rows[i][j];
-    inp.dataset.ri=i;
-    inp.dataset.pi=j;
+    inp.value=s.rows[i][j];
     inp.oninput=e=>{
-      rows[i][j]=e.target.value;
-      autoExpand(i);
-      updateRow(i);
-      update();
+      s.rows[i][j]=e.target.value;
+      autoExpand(i); updateRow(i); saveDB(); update();
     };
     inp.onkeydown=e=>{
-      if(e.key==='Enter'||e.key==='Tab'){
-        e.preventDefault();
-        focusNext(i,j);
-      }
+      if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); focusNext(i,j); }
     };
     cell.appendChild(inp);
     row.appendChild(cell);
   }
-
   const diff=document.createElement('div');
   diff.className='row-diff';
   diff.id='rd'+i;
   row.appendChild(diff);
-
   return row;
 }
 
 function focusNext(ri,pi){
-  const next=ri*numP+pi+1;
-  const allInputs=document.querySelectorAll('#gridBody .row-cell input');
-  if(allInputs[next]) allInputs[next].focus();
+  const s=cur();
+  const next=ri*s.numP+pi+1;
+  const all=document.querySelectorAll('#gridBody .row-cell input');
+  if(all[next]) all[next].focus();
 }
 
 function autoExpand(ri){
+  const s=cur();
   let trailing=0;
-  for(let i=rows.length-1;i>=0;i--){
-    if(rows[i].every(v=>v==='')) trailing++; else break;
+  for(let i=s.rows.length-1;i>=0;i--){
+    if(s.rows[i].every(v=>v==='')) trailing++; else break;
   }
   if(trailing<=AUTO_ADD){
     const body=document.getElementById('gridBody');
     const addBtn=body.lastElementChild;
     for(let k=0;k<10;k++){
-      rows.push(Array(4).fill(''));
-      body.insertBefore(makeRow(rows.length-1),addBtn);
+      s.rows.push(Array(4).fill(''));
+      body.insertBefore(makeRow(s.rows.length-1),addBtn);
     }
   }
 }
 
 function updateRow(i){
-  const {diff,empty}=rowDiff(i);
+  const s=cur();
+  let sum=0, hasVal=false;
+  for(let j=0;j<s.numP;j++){
+    const v=num(s.rows[i][j]);
+    if(v!==null){sum+=v;hasVal=true;}
+  }
   const rowEl=document.getElementById('row'+i);
   const numEl=document.getElementById('rn'+i);
   const diffEl=document.getElementById('rd'+i);
   if(!rowEl) return;
-  if(empty){
+  if(!hasVal){
     rowEl.className='grid-row empty';
     numEl.className='row-num dim';
     diffEl.textContent='';
     diffEl.className='row-diff';
-  } else if(diff===0){
+  } else if(sum===0){
     rowEl.className='grid-row valid';
     numEl.className='row-num';
     diffEl.textContent='✓';
@@ -329,44 +740,51 @@ function updateRow(i){
   } else {
     rowEl.className='grid-row invalid';
     numEl.className='row-num';
-    diffEl.textContent=(diff>0?'+':'')+diff;
+    diffEl.textContent=(sum>0?'+':'')+sum;
     diffEl.className='row-diff err';
   }
 }
 
 function buildChips(){
+  const s=cur();
   const el=document.getElementById('chipCols');
   el.innerHTML='';
-  for(let j=0;j<numP;j++){
+  for(let j=0;j<s.numP;j++){
     const col=document.createElement('div');
     col.className='chip-col';
-    col.innerHTML=`<div class="name" id="cn${j}">${players[j]}</div>
-      <div class="box"><input type="number" inputmode="numeric" placeholder="0" value="${chips[j]}" data-pi="${j}" oninput="chips[${j}]=this.value;update()"></div>
+    col.innerHTML=`<div class="name" id="cn${j}">${s.players[j]}</div>
+      <div class="box"><input type="number" inputmode="numeric" placeholder="0" value="${s.chips[j]}"
+        oninput="cur().chips[${j}]=this.value;saveDB();update()"></div>
       <div class="unit">枚</div>`;
     el.appendChild(col);
   }
 }
 
 function refreshChipNames(){
-  for(let j=0;j<numP;j++){
+  const s=cur();
+  for(let j=0;j<s.numP;j++){
     const el=document.getElementById('cn'+j);
-    if(el) el.textContent=players[j]||`P${j+1}`;
+    if(el) el.textContent=s.players[j]||`P${j+1}`;
   }
 }
 
+function num(v){ if(v===''||v==='-'||v==='+') return null; const n=+v; return isNaN(n)?null:n; }
+
 function update(){
+  const s=cur();
   let filled=0, invalid=0;
-  for(let i=0;i<rows.length;i++){
-    const {diff,empty}=rowDiff(i);
-    if(!empty){ filled++; if(diff!==0) invalid++; }
+  for(let i=0;i<s.rows.length;i++){
+    let sum=0, hasVal=false;
+    for(let j=0;j<s.numP;j++){ const v=num(s.rows[i][j]); if(v!==null){sum+=v;hasVal=true;} }
+    if(hasVal){ filled++; if(sum!==0) invalid++; }
   }
   document.getElementById('filledCount').textContent=filled+'局入力済み';
   const badge=document.getElementById('errBadge');
   if(invalid>0){badge.textContent=`⚠ ${invalid}行 合計≠0`;badge.style.display='';}
   else badge.style.display='none';
 
-  const cs=chipSum();
-  const chipHasVal=chips.slice(0,numP).some(v=>v!=='');
+  const cs=s.chips.slice(0,s.numP).reduce((a,v)=>a+(num(v)??0),0);
+  const chipHasVal=s.chips.slice(0,s.numP).some(v=>v!=='');
   const cst=document.getElementById('chipStatus');
   if(!chipHasVal) cst.textContent='';
   else if(cs===0){cst.className='chip-ok';cst.textContent='✓ 合計 0';}
@@ -374,13 +792,15 @@ function update(){
 
   const pr=num(document.getElementById('ptRate').value)??10;
   const cr=num(document.getElementById('chipRate').value)??50;
+  s.ptRate=pr; s.chipRate=cr;
+
   const totals=[];
-  for(let j=0;j<numP;j++){
+  for(let j=0;j<s.numP;j++){
     let pt=0;
-    for(let i=0;i<rows.length;i++) pt+=(num(rows[i][j])??0);
-    const chip=num(chips[j])??0;
+    for(let i=0;i<s.rows.length;i++) pt+=(num(s.rows[i][j])??0);
+    const chip=num(s.chips[j])??0;
     const yen=pt*pr+chip*cr;
-    totals.push({pt,chip,yen,name:players[j]||`P${j+1}`});
+    totals.push({pt,chip,yen,name:s.players[j]||`P${j+1}`});
   }
   const maxAbs=Math.max(1,...totals.map(t=>Math.abs(t.yen)));
   const el=document.getElementById('results');
@@ -407,17 +827,371 @@ function update(){
     el.appendChild(div);
   });
   document.getElementById('rateNote').textContent=`${pr}円/pt・${cr}円/chip`;
+  renderVenue();
+  saveDB();
 }
 
-buildHead();
-buildGrid();
-buildChips();
-for(let i=0;i<rows.length;i++) updateRow(i);
-update();
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/mahjong-score/sw.js');
+function resetAll(){
+  if(!confirm('このセッションのデータをすべてリセットしますか？')) return;
+  const s=cur();
+  s.rows=Array.from({length:INIT_ROWS},()=>Array(4).fill(''));
+  s.chips=['','','',''];
+  s.players=['Aさん','Bさん','Cさん','Dさん'];
+  s.numP=3;
+  s.ptRate=10; s.chipRate=50;
+  document.getElementById('ptRate').value=10;
+  document.getElementById('chipRate').value=50;
+  saveDB();
+  buildHead(); buildGrid(); buildChips();
+  for(let i=0;i<s.rows.length;i++) updateRow(i);
+  update();
 }
+
+// --- 履歴レンダリング ---
+function sessionTotals(s){
+  const res=[];
+  for(let j=0;j<s.numP;j++){
+    let pt=0;
+    for(let i=0;i<s.rows.length;i++) pt+=(num(s.rows[i][j])??0);
+    const chip=num(s.chips[j])??0;
+    const yen=pt*(s.ptRate??10)+chip*(s.chipRate??50);
+    res.push({name:s.players[j]||`P${j+1}`,yen});
+  }
+  return res;
+}
+
+function sessionGames(s){
+  return s.rows.filter(r=>r.some(v=>v!=='')).length;
+}
+
+function renderHistory(){
+  const el=document.getElementById('historyList');
+  el.innerHTML='';
+  const list=[...DB.sessions].reverse();
+  list.forEach(s=>{
+    const totals=sessionTotals(s);
+    const games=sessionGames(s);
+    const isCur=s.id===DB.currentId;
+    const d=new Date(s.date);
+    const dateStr=`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const div=document.createElement('div');
+    div.className='history-item'+(isCur?' current':'');
+    div.innerHTML=`
+      ${isCur?'<div class="history-badge">現在</div>':''}
+      <div class="history-date">${dateStr}</div>
+      <input class="history-name-input" value="${s.name}"
+        style="background:transparent;border:none;border-bottom:1px solid #334155;outline:none;color:#fff;font-size:15px;font-weight:700;width:100%;margin-bottom:6px;padding-bottom:2px"
+        oninput="renameSession('${s.id}',this.value)">
+      <div class="history-games">${games}局</div>
+      <div class="history-players">
+        ${totals.map(t=>`<span class="history-player ${t.yen>0?'pos':t.yen<0?'neg':'zero'}">${t.name} ${t.yen>0?'+':''}${t.yen.toLocaleString()}円</span>`).join('')}
+      </div>
+      ${s.memo?`<div style="font-size:11px;color:#64748b;margin:6px 0;padding:6px 8px;background:#0f172a;border-radius:8px">📝 ${s.memo}</div>`:''}
+      <div class="history-actions">
+        ${!isCur?`<button class="btn-sm btn-blue" onclick="switchSession('${s.id}')">このセッションに切り替え</button>`:'<span style="font-size:12px;color:#475569">編集中</span>'}
+        <button class="btn-sm btn-gray" onclick="deleteSession('${s.id}')" style="margin-left:auto">削除</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+// --- ユーザー管理 ---
+const USER_COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899'];
+
+function addUser(){
+  const inp=document.getElementById('newUserName');
+  const name=inp.value.trim();
+  if(!name){alert('名前を入力してください');return;}
+  if(DB.users.find(u=>u.name===name)){alert('同じ名前のユーザーが既にいます');return;}
+  const colorIdx=DB.users.length % USER_COLORS.length;
+  DB.users.push({
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2),
+    name,
+    color: USER_COLORS[colorIdx]
+  });
+  inp.value='';
+  saveDB();
+  renderUsers();
+}
+
+function deleteUser(id){
+  if(!confirm('このユーザーを削除しますか？')) return;
+  DB.users=DB.users.filter(u=>u.id!==id);
+  saveDB();
+  renderUsers();
+}
+
+function getUserStats(userId, userName){
+  let total=0, sessions=0, best=-Infinity, worst=Infinity;
+  DB.sessions.forEach(s=>{
+    const totals=sessionTotals(s);
+    // IDで一致 or 名前で一致
+    const pIds=s.playerIds||[];
+    totals.forEach((t,j)=>{
+      const matchId = pIds[j]===userId;
+      const matchName = !pIds[j] && t.name===userName;
+      if(matchId||matchName){
+        total+=t.yen; sessions++;
+        if(t.yen>best) best=t.yen;
+        if(t.yen<worst) worst=t.yen;
+      }
+    });
+  });
+  return {total,sessions,best,worst,avg:sessions>0?Math.round(total/sessions):0};
+}
+
+function renderUsers(){
+  const el=document.getElementById('userList');
+  if(!el) return;
+  el.innerHTML='';
+  if(DB.users.length===0){
+    el.innerHTML='<div class="stats-empty">まだユーザーがいません<br><span style="font-size:12px">上のフォームから追加してください</span></div>';
+    return;
+  }
+  // 通算収支でソート
+  const withStats=DB.users.map(u=>({...u, stats:getUserStats(u.id,u.name)}));
+  withStats.sort((a,b)=>b.stats.total-a.stats.total);
+
+  withStats.forEach(u=>{
+    const st=u.stats;
+    const initials=u.name.slice(0,2);
+    const card=document.createElement('div');
+    card.className='user-card';
+    card.innerHTML=`
+      <div class="user-avatar" style="background:${u.color}22;color:${u.color}">${initials}</div>
+      <div class="user-info">
+        <div class="uname">${u.name}</div>
+        ${st.sessions>0
+          ? `<div class="ustats">${st.sessions}セッション参加 ／ 平均 ${st.avg>0?'+':''}${st.avg.toLocaleString()}円</div>
+             <div class="utotal ${st.total>0?'pos':st.total<0?'neg':'zero'}">${st.total>0?'+':''}${st.total.toLocaleString()}円</div>`
+          : `<div class="ustats">まだ参加なし</div>`
+        }
+      </div>
+      <button class="btn-sm" style="background:#1e3a5f;color:#f87171;padding:6px 10px" onclick="deleteUser('${u.id}')">削除</button>`;
+    el.appendChild(card);
+  });
+}
+
+// --- 場代システム ---
+function setVenueMode(mode){
+  cur().venueMode = mode;
+  saveDB();
+  document.getElementById('vModeAuto').className = mode==='auto'?'on':'';
+  document.getElementById('vModePct').className  = mode==='percent'?'on':'';
+  document.getElementById('venueAutoSettings').style.display = mode==='auto'?'':'none';
+  document.getElementById('venuePctSettings').style.display  = mode==='percent'?'':'none';
+  renderVenue();
+}
+
+function setRakeTarget(t){
+  cur().venueRakeTarget = t;
+  saveDB();
+  document.getElementById('vTargetTop').className = t==='top'?'on':'';
+  document.getElementById('vTargetAll').className = t==='equal'?'on':'';
+  renderVenue();
+}
+
+function saveVenueSettings(){
+  const s = cur();
+  s.venueRake  = num(document.getElementById('venueRake')?.value)  ?? 100;
+  s.venueAmt   = num(document.getElementById('venueAmt')?.value)   ?? 0;
+  saveDB();
+}
+
+// プレイヤーごとの精算yen取得
+function getYenTotals(){
+  const s = cur();
+  const pr = num(document.getElementById('ptRate').value) ?? 10;
+  const cr = num(document.getElementById('chipRate').value) ?? 50;
+  return Array.from({length:s.numP},(_,j)=>{
+    let pt=0;
+    for(let i=0;i<s.rows.length;i++) pt+=(num(s.rows[i][j])??0);
+    const chip = num(s.chips[j])??0;
+    return { name: s.players[j]||`P${j+1}`, yen: pt*pr+chip*cr };
+  });
+}
+
+// 自動天引き計算
+function calcRake(){
+  const s = cur();
+  const rake   = s.venueRake ?? 100;
+  const target = s.venueRakeTarget ?? 'top';
+  const pr     = num(document.getElementById('ptRate').value) ?? 10;
+  const playerRakePt = Array(4).fill(0);
+  let poolPt = 0;
+
+  for(let i=0;i<s.rows.length;i++){
+    let sum=0, hasVal=false;
+    const vals=[];
+    for(let j=0;j<s.numP;j++){
+      const v=num(s.rows[i][j]);
+      vals.push(v??0);
+      if(v!==null){sum+=v;hasVal=true;}
+    }
+    if(!hasVal||sum!==0) continue; // 未入力 or ズレあり行はスキップ
+
+    poolPt += rake;
+    if(target==='top'){
+      let mx=-Infinity, ti=0;
+      for(let j=0;j<s.numP;j++) if(vals[j]>mx){mx=vals[j];ti=j;}
+      playerRakePt[ti] += rake;
+    } else {
+      const each = rake/s.numP;
+      for(let j=0;j<s.numP;j++) playerRakePt[j]+=each;
+    }
+  }
+  return { poolPt, poolYen: poolPt*pr, playerRakePt: playerRakePt.slice(0,s.numP) };
+}
+
+// パーセンテージ入力欄を作る
+function buildPctInputs(){
+  const s = cur();
+  const el = document.getElementById('pctInputs');
+  if(!el) return;
+  el.innerHTML='';
+  for(let j=0;j<s.numP;j++){
+    const row=document.createElement('div');
+    row.className='pct-row';
+    const pct = s.venuePcts?.[j] ?? '';
+    row.innerHTML=`
+      <div class="pname">${s.players[j]||`P${j+1}`}</div>
+      <input type="number" inputmode="decimal" placeholder="自動" value="${pct}"
+        min="0" max="100" step="0.1"
+        oninput="onPctInput(${j},this.value)">
+      <div class="punit">%</div>`;
+    el.appendChild(row);
+  }
+  updatePctSum();
+}
+
+function onPctInput(j,v){
+  if(!cur().venuePcts) cur().venuePcts=Array(4).fill('');
+  cur().venuePcts[j]=v;
+  saveDB();
+  updatePctSum();
+  renderVenue();
+}
+
+function updatePctSum(){
+  const s=cur();
+  const el=document.getElementById('pctSumLabel');
+  if(!el) return;
+  const vals=(s.venuePcts||[]).slice(0,s.numP).map(v=>parseFloat(v)||0);
+  const sum=vals.reduce((a,b)=>a+b,0);
+  const hasCustom=vals.some(v=>v>0);
+  if(!hasCustom){el.textContent='';return;}
+  el.textContent=`合計 ${sum.toFixed(1)}%`;
+  el.className='pct-sum '+(Math.abs(sum-100)<0.1?'ok':'err');
+}
+
+function resetPcts(){
+  cur().venuePcts=Array(4).fill('');
+  saveDB();
+  buildPctInputs();
+  renderVenue();
+}
+
+function renderVenue(){
+  const s = cur();
+  const mode = s.venueMode ?? 'percent';
+
+  if(mode==='auto'){
+    const { poolYen, poolPt, playerRakePt } = calcRake();
+    const pr = num(document.getElementById('ptRate').value) ?? 10;
+    const rake = s.venueRake ?? 100;
+    const target = s.venueRakeTarget ?? 'top';
+    const yens = getYenTotals();
+    const el = document.getElementById('venueResult');
+    if(!el) return;
+
+    const games = s.rows.filter(r=>r.some(v=>v!=='')).length;
+    const validGames = (() => {
+      let c=0;
+      for(let i=0;i<s.rows.length;i++){
+        let sum=0,hasVal=false;
+        for(let j=0;j<s.numP;j++){const v=num(s.rows[i][j]);if(v!==null){sum+=v;hasVal=true;}}
+        if(hasVal&&sum===0) c++;
+      }
+      return c;
+    })();
+
+    if(rake<=0||validGames===0){
+      el.innerHTML='<div style="font-size:12px;color:#475569;text-align:center;padding:8px 0">確定局が増えると自動で天引きされます</div>';
+      return;
+    }
+
+    el.innerHTML=`
+      <div class="venue-pool">
+        <div class="label">プール金（天引き済み）</div>
+        <div class="amount">${poolYen.toLocaleString()}円</div>
+        <div class="sub">${validGames}局 × ${rake}pt × ${pr}円 ／ ${target==='top'?'トップから天引き':'全員均等天引き'}</div>
+      </div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:8px">天引き後の精算結果</div>
+      ${yens.map((t,j)=>{
+        const rakeYen = Math.round(playerRakePt[j]*pr);
+        const adj = t.yen - rakeYen;
+        const sign = adj>=0?'+':'';
+        return `<div class="venue-adj-row">
+          <div>
+            <div class="venue-adj-name">${t.name}</div>
+            <div class="venue-adj-detail">元: ${t.yen>0?'+':''}${t.yen.toLocaleString()}円 ／ 天引き: -${rakeYen.toLocaleString()}円</div>
+          </div>
+          <div class="venue-adj-yen ${adj>=0?'pos':'neg'}">${sign}${adj.toLocaleString()}円</div>
+        </div>`;
+      }).join('')}`;
+
+  } else {
+    // パーセンテージモード
+    const venue = num(document.getElementById('venueAmt')?.value) ?? 0;
+    const el = document.getElementById('venueResult2');
+    if(!el) return;
+    if(venue<=0){
+      el.innerHTML='<div style="font-size:12px;color:#475569;text-align:center;padding:8px 0">場代を入力すると計算します</div>';
+      return;
+    }
+
+    const yens = getYenTotals();
+    const customPcts = (s.venuePcts||[]).slice(0,s.numP).map(v=>parseFloat(v)||0);
+    const hasCustom = customPcts.some(v=>v>0);
+
+    let pcts;
+    if(hasCustom){
+      const sum=customPcts.reduce((a,b)=>a+b,0);
+      pcts = sum>0 ? customPcts.map(p=>p/sum*100) : customPcts;
+    } else {
+      // 自動：勝ち分比例
+      const posSum=yens.reduce((a,t)=>a+Math.max(0,t.yen),0);
+      if(posSum>0){
+        pcts=yens.map(t=>Math.max(0,t.yen)/posSum*100);
+      } else {
+        pcts=yens.map(()=>100/yens.length);
+      }
+    }
+
+    let pays = pcts.map(p=>Math.round(p/100*venue));
+    const diff = venue - pays.reduce((a,b)=>a+b,0);
+    const mi = pays.reduce((mx,v,i,a)=>v>a[mx]?i:mx,0);
+    pays[mi]+=diff;
+
+    el.innerHTML=`
+      ${yens.map((t,j)=>`
+        <div class="venue-row">
+          <div class="venue-name">${t.name}</div>
+          <div class="venue-bar-wrap"><div class="venue-bar-inner" style="width:${pcts[j]}%"></div></div>
+          <div class="venue-pct">${pcts[j].toFixed(0)}%</div>
+          <div class="venue-pay">${pays[j].toLocaleString()}円</div>
+        </div>`).join('')}
+      <div class="venue-total">
+        <span>合計 <b>${pays.reduce((a,b)=>a+b,0).toLocaleString()}円</b></span>
+        <span>場代 <b>${venue.toLocaleString()}円</b></span>
+      </div>
+      <div class="venue-note">${hasCustom?'手動設定の割合で負担':yens.reduce((a,t)=>a+Math.max(0,t.yen),0)>0?'勝ち分に応じて負担（負け組0円）':'全員負けのため均等割り'}</div>`;
+  }
+}
+
+// --- 起動 ---
+loadDB();
+loadSessionToUI();
 </script>
 </body>
 </html>
