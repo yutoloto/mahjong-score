@@ -274,33 +274,6 @@ button{cursor:pointer}
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
-      <span style="font-size:12px;color:#94a3b8;font-weight:700">入力モード</span>
-      <div class="toggle">
-        <button id="modeDiff" class="on" onclick="setInputMode('diff')">点差</button>
-        <button id="modeSoten" onclick="setInputMode('soten')">素点</button>
-      </div>
-    </div>
-    <div id="kaeshiBox" style="margin-top:10px;display:none">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div class="rate-box">
-          <label>配給点（持ち点）</label>
-          <div class="rate-row">
-            <input type="number" inputmode="numeric" id="mochiPt" value="35000" oninput="onKaeshiChange()">
-            <span>点</span>
-          </div>
-        </div>
-        <div class="rate-box">
-          <label>返し点</label>
-          <div class="rate-row">
-            <input type="number" inputmode="numeric" id="kaeshiPt" value="40000" oninput="onKaeshiChange()">
-            <span>点</span>
-          </div>
-        </div>
-      </div>
-      <div style="font-size:11px;color:#475569;margin-top:4px" id="okaLabel"></div>
-    </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
       <span style="font-size:12px;color:#94a3b8;font-weight:700">差し馬</span>
       <input type="checkbox" id="sashimaOnChk" onchange="onSashimaToggle()" style="width:18px;height:18px">
     </div>
@@ -476,12 +449,8 @@ function createSession(){
     venueRakeTarget: 'top',
     venueAmt: 0,
     venuePcts: ['','','',''],
-    inputMode: 'diff',
-    mochiPt: 35000,
-    kaeshiPt: 40000,
     sashimaOn: false,
-    sashimaRate: '1-2',
-    sotenRows: Array.from({length:INIT_ROWS}, ()=>Array(4).fill(''))
+    sashimaRate: '1-2'
   };
 }
 
@@ -568,6 +537,7 @@ function deletePreset(idx){
 
 function renderPresets(){
   const el = document.getElementById('presetList');
+  if(!el) return;
   el.innerHTML='';
   if(DB.presets.length===0){
     el.innerHTML='<span style="font-size:11px;color:#475569">プリセットなし</span>';
@@ -595,19 +565,9 @@ function loadSessionToUI(){
   document.getElementById('chipRate').value = s.chipRate;
   document.getElementById('btn3').className = s.numP===3?'on':'';
   document.getElementById('btn4').className = s.numP===4?'on':'';
-  // 入力モード・差し馬
-  if(!s.inputMode) s.inputMode='diff';
-  if(s.mochiPt==null) s.mochiPt=35000;
-  if(s.kaeshiPt==null) s.kaeshiPt=40000;
+  // 差し馬
   if(s.sashimaOn==null) s.sashimaOn=false;
   if(!s.sashimaRate||typeof s.sashimaRate==='number') s.sashimaRate='1-2';
-  ensureSotenRows(s);
-  document.getElementById('modeDiff').className = s.inputMode==='diff'?'on':'';
-  document.getElementById('modeSoten').className = s.inputMode==='soten'?'on':'';
-  document.getElementById('kaeshiBox').style.display = s.inputMode==='soten'?'':'none';
-  document.getElementById('mochiPt').value = s.mochiPt;
-  document.getElementById('kaeshiPt').value = s.kaeshiPt;
-  updateOkaLabel(s);
   document.getElementById('sashimaOnChk').checked = s.sashimaOn;
   document.getElementById('sashimaRateBox').style.display = s.sashimaOn?'':'none';
   updateSashimaRateUI(s.sashimaRate);
@@ -615,11 +575,7 @@ function loadSessionToUI(){
   buildHead();
   buildGrid();
   buildChips();
-  buildSotenInputs();
   for(let i=0;i<s.rows.length;i++) updateRow(i);
-  if(s.inputMode==='soten'){
-    for(let i=0;i<s.rows.length;i++) updateSotenDiffLabels(i);
-  }
   renderPresets();
   // 場代
   const mode = s.venueMode ?? 'percent';
@@ -637,7 +593,7 @@ function setPlayers(n){
   document.getElementById('btn3').className=n===3?'on':'';
   document.getElementById('btn4').className=n===4?'on':'';
   saveDB();
-  buildHead(); buildGrid(); buildChips(); buildSotenInputs(); update();
+  buildHead(); buildGrid(); buildChips(); update();
 }
 
 function buildHead(){
@@ -729,42 +685,7 @@ function buildGrid(){
   body.appendChild(btn);
 }
 
-// --- 入力モード・差し馬 ---
-function ensureSotenRows(s){
-  if(!s.sotenRows) s.sotenRows=Array.from({length:s.rows.length},()=>Array(4).fill(''));
-  while(s.sotenRows.length<s.rows.length) s.sotenRows.push(Array(4).fill(''));
-}
-
-function setInputMode(mode){
-  const s=cur();
-  s.inputMode=mode;
-  document.getElementById('modeDiff').className=mode==='diff'?'on':'';
-  document.getElementById('modeSoten').className=mode==='soten'?'on':'';
-  document.getElementById('kaeshiBox').style.display=mode==='soten'?'':'none';
-  saveDB();
-  buildGrid();
-  for(let i=0;i<s.rows.length;i++) updateRow(i);
-  update();
-}
-
-function updateOkaLabel(s){
-  const el=document.getElementById('okaLabel');
-  if(!el) return;
-  const oka=((s.kaeshiPt??40000)-(s.mochiPt??35000))*s.numP/1000;
-  el.textContent=`オカ: ${oka>=0?'+':''}${oka}千点 → 1位に加算`;
-}
-
-function onKaeshiChange(){
-  const s=cur();
-  s.mochiPt=num(document.getElementById('mochiPt').value)??35000;
-  s.kaeshiPt=num(document.getElementById('kaeshiPt').value)??40000;
-  updateOkaLabel(s);
-  if(s.inputMode==='soten'){
-    for(let i=0;i<s.rows.length;i++){ convertSotenRow(i); updateRow(i); }
-  }
-  saveDB(); update();
-}
-
+// --- 差し馬 ---
 function onSashimaToggle(){
   const s=cur();
   s.sashimaOn=document.getElementById('sashimaOnChk').checked;
@@ -776,39 +697,6 @@ function onSashimaToggle(){
 function onSashimaRateChange(){
   cur().sashimaRate=num(document.getElementById('sashimaRateInput').value)??10;
   saveDB(); update();
-}
-
-function convertSotenRow(i){
-  const s=cur();
-  ensureSotenRows(s);
-  const kaeshi=s.kaeshiPt??40000;
-  const mochi=s.mochiPt??35000;
-  const vals=[]; let all=true;
-  for(let j=0;j<s.numP;j++){
-    const v=num(s.sotenRows[i][j]);
-    vals.push(v);
-    if(v===null) all=false;
-  }
-  if(!all){ for(let j=0;j<s.numP;j++) s.rows[i][j]=''; return; }
-  const oka=(kaeshi-mochi)*s.numP/1000;
-  const topIdx=vals.reduce((mi,v,j)=>v>vals[mi]?j:mi,0);
-  const diffs=vals.map((v,j)=>(v-kaeshi)/1000);
-  diffs[topIdx]+=oka;
-  for(let j=0;j<s.numP;j++) s.rows[i][j]=String(diffs[j]);
-}
-
-function updateSotenDiffLabels(i){
-  const s=cur();
-  if(s.inputMode!=='soten') return;
-  for(let j=0;j<s.numP;j++){
-    const lbl=document.getElementById(`sdl${i}_${j}`);
-    if(!lbl) continue;
-    const v=num(s.rows[i][j]);
-    if(v===null){lbl.textContent='';continue;}
-    const pos=v>=0;
-    lbl.textContent=(pos?'+':'')+v;
-    lbl.style.color=pos?'#22c55e':'#ef4444';
-  }
 }
 
 function parseSashimaRate(r){
@@ -840,28 +728,15 @@ function calcSashimaPt(s){
   const sashimaPt=Array(s.numP).fill(0);
   if(!s.sashimaOn) return sashimaPt;
   const [a,b]=parseSashimaRate(s.sashimaRate);
-  const isSoten=s.inputMode==='soten';
   for(let i=0;i<s.rows.length;i++){
-    let valid=false;
     const vals=[];
-    if(isSoten){
-      let sotenSum=0, ok=true;
-      for(let j=0;j<s.numP;j++){
-        const v=num(s.sotenRows?.[i]?.[j]);
-        if(v===null){ok=false;break;}
-        vals.push(v); sotenSum+=v;
-      }
-      valid = ok && Math.abs(sotenSum-(s.mochiPt??35000)*s.numP)<1;
-    } else {
-      let sum=0, ok=true;
-      for(let j=0;j<s.numP;j++){
-        const v=num(s.rows[i][j]);
-        if(v===null){ok=false;break;}
-        vals.push(v); sum+=v;
-      }
-      valid = ok && sum===0;
+    let sum=0, ok=true;
+    for(let j=0;j<s.numP;j++){
+      const v=num(s.rows[i][j]);
+      if(v===null){ok=false;break;}
+      vals.push(v); sum+=v;
     }
-    if(!valid) continue;
+    if(!ok || Math.abs(sum)>0.01) continue;
     const order=vals.map((p,idx)=>({p,idx})).sort((a,b)=>b.p-a.p);
     if(s.numP===4){
       sashimaPt[order[0].idx]+=b*10;
@@ -893,33 +768,16 @@ function makeRow(i){
     const inp=document.createElement('input');
     inp.type='number';
     inp.inputMode='numeric';
-    const soten=s.inputMode==='soten';
-    if(soten) ensureSotenRows(s);
-    inp.placeholder=soten?'35000':'—';
-    if(soten) inp.inputMode='text';
-    inp.value=soten?s.sotenRows[i][j]:s.rows[i][j];
+    inp.placeholder='—';
+    inp.value=s.rows[i][j];
     inp.oninput=e=>{
-      if(s.inputMode==='soten'){
-        ensureSotenRows(s);
-        s.sotenRows[i][j]=e.target.value;
-        convertSotenRow(i);
-        updateSotenDiffLabels(i);
-      } else {
-        s.rows[i][j]=e.target.value;
-      }
-      autoFillLast(i);
+      s.rows[i][j]=e.target.value;
       autoExpand(i); updateRow(i); saveDB(); update();
     };
     inp.onkeydown=e=>{
       if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); focusNext(i,j); }
     };
     cell.appendChild(inp);
-    if(soten){
-      const lbl=document.createElement('div');
-      lbl.id=`sdl${i}_${j}`;
-      lbl.style.cssText='font-size:10px;color:#64748b;text-align:center;margin-top:1px;height:12px';
-      cell.appendChild(lbl);
-    }
     row.appendChild(cell);
   }
   const diff=document.createElement('div');
@@ -927,32 +785,6 @@ function makeRow(i){
   diff.id='rd'+i;
   row.appendChild(diff);
   return row;
-}
-
-function autoFillLast(i){
-  const s=cur();
-  const soten=s.inputMode==='soten';
-  const src=soten?(ensureSotenRows(s),s.sotenRows):s.rows;
-  let emptyIdx=-1, sum=0, filled=0;
-  for(let j=0;j<s.numP;j++){
-    const v=num(src[i][j]);
-    if(v===null){
-      if(emptyIdx!==-1) return;
-      emptyIdx=j;
-    } else { sum+=v; filled++; }
-  }
-  if(emptyIdx===-1||filled!==s.numP-1) return;
-  const val=soten?(s.mochiPt??35000)*s.numP-sum:-sum;
-  src[i][emptyIdx]=String(val);
-  const inputs=document.querySelectorAll('#row'+i+' .row-cell input');
-  if(inputs[emptyIdx]){
-    inputs[emptyIdx].value=val;
-    inputs[emptyIdx].placeholder='自動';
-  }
-  if(soten){
-    convertSotenRow(i);
-    updateSotenDiffLabels(i);
-  }
 }
 
 function focusNext(ri,pi){
@@ -965,9 +797,8 @@ function focusNext(ri,pi){
 function autoExpand(ri){
   const s=cur();
   let trailing=0;
-  const src = s.inputMode==='soten' ? (ensureSotenRows(s), s.sotenRows) : s.rows;
-  for(let i=src.length-1;i>=0;i--){
-    if(src[i].every(v=>v==='')) trailing++; else break;
+  for(let i=s.rows.length-1;i>=0;i--){
+    if(s.rows[i].every(v=>v==='')) trailing++; else break;
   }
   if(trailing<=AUTO_ADD){
     const body=document.getElementById('gridBody');
@@ -981,26 +812,16 @@ function autoExpand(ri){
 
 function updateRow(i){
   const s=cur();
-  const soten=s.inputMode==='soten';
-  let sum=0, hasVal=false, allFilled=true;
-  if(soten){
-    for(let j=0;j<s.numP;j++){
-      const v=num(s.sotenRows?.[i]?.[j]);
-      if(v!==null){sum+=v;hasVal=true;} else allFilled=false;
-    }
-  } else {
-    allFilled=false;
-    for(let j=0;j<s.numP;j++){
-      const v=num(s.rows[i][j]);
-      if(v!==null){sum+=v;hasVal=true;}
-    }
+  let sum=0, hasVal=false;
+  for(let j=0;j<s.numP;j++){
+    const v=num(s.rows[i][j]);
+    if(v!==null){sum+=v;hasVal=true;}
   }
   const rowEl=document.getElementById('row'+i);
   const numEl=document.getElementById('rn'+i);
   const diffEl=document.getElementById('rd'+i);
   if(!rowEl) return;
-  const expected=soten?(s.mochiPt??35000)*s.numP:0;
-  const valid=soten?allFilled&&sum===expected:hasVal&&sum===0;
+  const valid=hasVal&&sum===0;
   if(!hasVal){
     rowEl.className='grid-row empty';
     numEl.className='row-num dim';
@@ -1014,8 +835,7 @@ function updateRow(i){
   } else {
     rowEl.className='grid-row invalid';
     numEl.className='row-num';
-    if(soten){ const d=sum-expected; diffEl.textContent=(d>0?'+':'')+d; }
-    else{ diffEl.textContent=(sum>0?'+':'')+sum; }
+    diffEl.textContent=(sum>0?'+':'')+sum;
     diffEl.className='row-diff err';
   }
 }
@@ -1112,7 +932,6 @@ function resetAll(){
   if(!confirm('このセッションのデータをすべてリセットしますか？')) return;
   const s=cur();
   s.rows=Array.from({length:INIT_ROWS},()=>Array(4).fill(''));
-  s.sotenRows=Array.from({length:INIT_ROWS},()=>Array(4).fill(''));
   s.chips=['','','',''];
   s.players=['Aさん','Bさん','Cさん','Dさん'];
   s.numP=3;
@@ -1471,145 +1290,6 @@ function renderVenue(){
 loadDB();
 loadSessionToUI();
 if('serviceWorker' in navigator){
-// --- 素点精算 ---
-function buildSotenInputs(){
-  const s=cur();
-  const el=document.getElementById('sotenInputs');
-  if(!el) return;
-  el.innerHTML='<div style="font-size:12px;color:#64748b;margin-bottom:6px">最終素点（各自の点棒）</div>';
-  for(let j=0;j<s.numP;j++){
-    const name=s.players[j]||`P${j+1}`;
-    const div=document.createElement('div');
-    div.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px';
-    div.innerHTML=`<div style="width:60px;font-size:13px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
-      <input type="number" inputmode="numeric" id="soten${j}" placeholder="例: 32000"
-        style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;padding:7px 10px;font-size:14px"
-        oninput="calcSoten()">
-      <span style="font-size:12px;color:#64748b">pt</span>`;
-    el.appendChild(div);
-  }
-  buildTobiPickers();
-}
-
-function buildTobiPickers(){
-  const s=cur();
-  const el=document.getElementById('tobiPickers');
-  if(!el) return;
-  el.innerHTML='';
-  for(let j=0;j<s.numP;j++){
-    const name=s.players[j]||`P${j+1}`;
-    const btn=document.createElement('button');
-    btn.id=`tobiBtn${j}`;
-    btn.textContent=name;
-    btn.style.cssText='padding:6px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:13px';
-    btn.onclick=()=>selectTobi(j);
-    el.appendChild(btn);
-  }
-}
-
-let selectedTobi=-1;
-function selectTobi(j){
-  selectedTobi=j;
-  const s=cur();
-  for(let i=0;i<s.numP;i++){
-    const b=document.getElementById(`tobiBtn${i}`);
-    if(!b) continue;
-    b.style.background=i===j?'#dc2626':'#1e293b';
-    b.style.color=i===j?'#fff':'#94a3b8';
-    b.style.borderColor=i===j?'#dc2626':'#334155';
-  }
-  calcSoten();
-}
-
-function toggleDoubleTobi(){
-  const on=document.getElementById('doubleTobiChk').checked;
-  document.getElementById('tobiSetting').style.display=on?'':'none';
-  calcSoten();
-}
-
-function calcSoten(){
-  const s=cur();
-  const pr=num(document.getElementById('ptRate').value)??10;
-  const kaeshi=num(document.getElementById('kaeshi').value)??30000;
-  const uma1=(num(document.getElementById('uma1').value)??10)*1000;
-  const uma2=(num(document.getElementById('uma2').value)??3)*1000;
-  const sashima=num(document.getElementById('sashima').value)??0;
-  const doubleTobi=document.getElementById('doubleTobiChk')?.checked??false;
-
-  const scores=[];
-  for(let j=0;j<s.numP;j++){
-    const v=num(document.getElementById(`soten${j}`)?.value);
-    scores.push(v);
-  }
-  if(scores.some(v=>v===null)){
-    document.getElementById('sotenResults').innerHTML='<div style="font-size:12px;color:#475569;text-align:center;padding:8px">全員の素点を入力してください</div>';
-    return;
-  }
-
-  // 素点 → 点差
-  const pts=scores.map(s=>s-kaeshi);
-
-  // 順位確定
-  const order=[...pts.map((p,i)=>({p,i}))].sort((a,b)=>b.p-a.p);
-  const umaBonus=Array(s.numP).fill(0);
-  if(s.numP===4){
-    umaBonus[order[0].i]+=uma1;
-    umaBonus[order[1].i]+=uma2;
-    umaBonus[order[2].i]-=uma2;
-    umaBonus[order[3].i]-=uma1;
-  } else {
-    umaBonus[order[0].i]+=uma1;
-    umaBonus[order[1].i]+=0;
-    umaBonus[order[2].i]-=uma1;
-  }
-
-  // ダブル飛び上家取り
-  const tobiBonus=Array(s.numP).fill(0);
-  if(doubleTobi && selectedTobi>=0){
-    const tobiPt=scores[selectedTobi];
-    if(tobiPt<0){
-      // 上家 = 座席上の一つ前のプレイヤー
-      const kamichaIdx=(selectedTobi-1+s.numP)%s.numP;
-      const bonus=Math.abs(tobiPt)*pr;
-      tobiBonus[kamichaIdx]+=bonus;
-      tobiBonus[selectedTobi]-=bonus;
-    }
-  }
-
-  // 差し馬：1位が総取り
-  const sashimaBonus=Array(s.numP).fill(0);
-  if(sashima>0){
-    sashimaBonus[order[0].i]+=sashima*(s.numP-1);
-    for(let i=1;i<s.numP;i++) sashimaBonus[order[i].i]-=sashima;
-  }
-
-  const yens=pts.map((p,j)=>Math.round((p+umaBonus[j])*pr/100)*100+tobiBonus[j]+sashimaBonus[j]);
-  const maxAbs=Math.max(1,...yens.map(Math.abs));
-
-  const el=document.getElementById('sotenResults');
-  el.innerHTML='<div style="font-size:12px;color:#64748b;margin-bottom:8px;margin-top:4px">精算結果</div>'+
-    yens.map((yen,j)=>{
-      const name=s.players[j]||`P${j+1}`;
-      const isPos=yen>=0;
-      const bw=Math.round(Math.abs(yen)/maxAbs*50);
-      const rank=order.findIndex(o=>o.i===j)+1;
-      return `<div class="result-item">
-        <div class="result-top">
-          <span class="result-name">${rank}位 ${name}</span>
-          <span class="result-yen ${isPos?'pos':'neg'}">${isPos?'+':''}${yen.toLocaleString()}円</span>
-        </div>
-        <div class="result-sub">
-          <span>素点: <b>${scores[j].toLocaleString()}</b></span>
-          <span>点差: <b>${pts[j]>0?'+':''}${pts[j].toLocaleString()}</b></span>
-          <span>ウマ: <b>${umaBonus[j]>=0?'+':''}${umaBonus[j].toLocaleString()}</b></span>
-        </div>
-        <div class="result-bar">
-          <div class="result-bar-fill ${isPos?'pos':'neg'}" style="width:${bw}%"></div>
-          <div class="result-bar-mid"></div>
-        </div></div>`;
-    }).join('');
-}
-
   navigator.serviceWorker.register('sw.js', {updateViaCache:'all'}).then(reg => {
     if(!navigator.serviceWorker.controller) {
       navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
